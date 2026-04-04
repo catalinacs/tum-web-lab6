@@ -1,121 +1,117 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+import { useState } from 'react';
+import { useLocalStorage } from './hooks/useLocalStorage';
+import PomodoroTimer from './components/PomodoroTimer';
+import CourseList from './components/CourseList';
+import AddCourseForm from './components/AddCourseForm';
+import SessionLog from './components/SessionLog';
+import StatsPanel from './components/StatsPanel';
+import EventCalendar from './components/EventCalendar';
+import AddEventModal from './components/AddEventModal';
+import ThemeToggle from './components/ThemeToggle';
+
+const PASTEL_COLORS = ['#f4a7b9', '#a8c5a0', '#c3b1e1', '#ffcba4', '#a8d8ea', '#b5ead7', '#ffd97d', '#d4a5c9'];
+
+const NAV_ITEMS = [
+  { id: 'timer', label: 'Timer' },
+  { id: 'courses', label: 'Courses' },
+  { id: 'calendar', label: 'Calendar' },
+  { id: 'stats', label: 'Stats' },
+];
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [courses, setCourses] = useLocalStorage('studysync_courses', []);
+  const [sessions, setSessions] = useLocalStorage('studysync_sessions', []);
+  const [events, setEvents] = useLocalStorage('studysync_events', []);
+  const [theme, setTheme] = useLocalStorage('studysync_theme', 'light');
+  const [activeView, setActiveView] = useState('timer');
+  const [selectedCourse, setSelectedCourse] = useState(null);
+  const [modalDate, setModalDate] = useState(null);
+
+  const handleAddCourse = (name) => {
+    const color = PASTEL_COLORS[courses.length % PASTEL_COLORS.length];
+    setCourses((prev) => [...prev, { id: crypto.randomUUID(), name, color }]);
+  };
+
+  const handleSessionComplete = (course, duration) => {
+    setSessions((prev) => [
+      ...prev,
+      {
+        id: crypto.randomUUID(),
+        courseId: course?.id ?? null,
+        duration,
+        completedAt: new Date().toISOString(),
+      },
+    ]);
+  };
+
+  const handleAddEvent = (event) => {
+    setEvents((prev) => [...prev, { id: crypto.randomUUID(), ...event }]);
+  };
+
+  const sharedProps = {
+    courses,
+    setCourses,
+    sessions,
+    setSessions,
+    events,
+    setEvents,
+    selectedCourse,
+    setSelectedCourse,
+  };
+
+  const renderView = () => {
+    switch (activeView) {
+      case 'timer':
+        return <PomodoroTimer {...sharedProps} onSessionComplete={handleSessionComplete} />;
+      case 'courses':
+        return (
+          <>
+            <AddCourseForm onAddCourse={handleAddCourse} />
+            <CourseList {...sharedProps} />
+            <SessionLog {...sharedProps} />
+          </>
+        );
+      case 'calendar':
+        return (
+          <>
+            <EventCalendar {...sharedProps} onDayClick={(date) => setModalDate(date)} />
+            {modalDate && (
+              <AddEventModal
+                courses={courses}
+                initialDate={modalDate}
+                onAddEvent={handleAddEvent}
+                onClose={() => setModalDate(null)}
+              />
+            )}
+          </>
+        );
+      case 'stats':
+        return <StatsPanel {...sharedProps} />;
+      default:
+        return null;
+    }
+  };
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
-
-      <div className="ticks"></div>
-
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
-
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+    <div data-theme={theme}>
+      <aside>
+        <h1>StudySync</h1>
+        <nav>
+          {NAV_ITEMS.map((item) => (
+            <button
+              key={item.id}
+              onClick={() => setActiveView(item.id)}
+              aria-current={activeView === item.id ? 'page' : undefined}
+            >
+              {item.label}
+            </button>
+          ))}
+        </nav>
+        <ThemeToggle theme={theme} setTheme={setTheme} />
+      </aside>
+      <main>{renderView()}</main>
+    </div>
+  );
 }
 
-export default App
+export default App;
