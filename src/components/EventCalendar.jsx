@@ -21,16 +21,15 @@ function toDateKey(year, month, day) {
 
 export default function EventCalendar({ events, onDayClick }) {
   const today = new Date();
-  const [viewYear, setViewYear] = useState(today.getFullYear());
+  const [viewYear, setViewYear]   = useState(today.getFullYear());
   const [viewMonth, setViewMonth] = useState(today.getMonth());
 
   const daysInMonth = getDaysInMonth(viewYear, viewMonth);
-  const firstDow = getFirstDayOfWeek(viewYear, viewMonth);
+  const firstDow    = getFirstDayOfWeek(viewYear, viewMonth);
 
   const eventsByDay = events.reduce((acc, ev) => {
-    const key = ev.date;
-    if (!acc[key]) acc[key] = [];
-    acc[key].push(ev);
+    if (!acc[ev.date]) acc[ev.date] = [];
+    acc[ev.date].push(ev);
     return acc;
   }, {});
 
@@ -45,8 +44,7 @@ export default function EventCalendar({ events, onDayClick }) {
   };
 
   const monthLabel = new Date(viewYear, viewMonth).toLocaleString('default', {
-    month: 'long',
-    year: 'numeric',
+    month: 'long', year: 'numeric',
   });
 
   const todayKey = toDateKey(today.getFullYear(), today.getMonth(), today.getDate());
@@ -60,82 +58,54 @@ export default function EventCalendar({ events, onDayClick }) {
   for (let d = 1; d <= daysInMonth; d++) cells.push(d);
 
   return (
-    <div style={{ display: 'flex', gap: 24 }}>
-      <div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-          <button onClick={prevMonth}>{'<'}</button>
-          <strong>{monthLabel}</strong>
-          <button onClick={nextMonth}>{'>'}</button>
+    <div className="calendar-page">
+      <div className="calendar-left">
+        <div className="calendar-header">
+          <button className="calendar-nav-btn" onClick={prevMonth}>{'<'}</button>
+          <span className="calendar-month-label">{monthLabel}</span>
+          <button className="calendar-nav-btn" onClick={nextMonth}>{'>'}</button>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 36px)', gap: 2 }}>
+        <div className="calendar-grid">
           {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map((d) => (
-            <div key={d} style={{ textAlign: 'center', fontWeight: 'bold', fontSize: 12 }}>{d}</div>
+            <div key={d} className="calendar-dow">{d}</div>
           ))}
           {cells.map((day, idx) => {
             if (!day) return <div key={`empty-${idx}`} />;
-            const key = toDateKey(viewYear, viewMonth, day);
+            const key       = toDateKey(viewYear, viewMonth, day);
             const hasEvents = !!eventsByDay[key];
-            const isToday = key === todayKey;
+            const isToday   = key === todayKey;
+
+            let cls = 'calendar-day';
+            if (isToday)   cls += ' calendar-day--today';
+            if (hasEvents) cls += ' calendar-day--has-events';
 
             return (
-              <button
-                key={key}
-                onClick={() => onDayClick && onDayClick(key)}
-                style={{
-                  width: 36,
-                  height: 36,
-                  borderRadius: 6,
-                  border: isToday ? '2px solid #888' : '1px solid #ddd',
-                  fontWeight: hasEvents ? 'bold' : 'normal',
-                  backgroundColor: hasEvents ? '#f0e6ff' : 'transparent',
-                  cursor: 'pointer',
-                  position: 'relative',
-                }}
-              >
+              <button key={key} className={cls} onClick={() => onDayClick && onDayClick(key)}>
                 {day}
-                {hasEvents && (
-                  <span
-                    style={{
-                      position: 'absolute',
-                      bottom: 3,
-                      left: '50%',
-                      transform: 'translateX(-50%)',
-                      width: 5,
-                      height: 5,
-                      borderRadius: '50%',
-                      backgroundColor: '#888',
-                      display: 'block',
-                    }}
-                  />
-                )}
+                {hasEvents && <span className="calendar-day-dot" />}
               </button>
             );
           })}
         </div>
       </div>
 
-      <div style={{ flex: 1 }}>
-        <h3>Upcoming</h3>
+      <div className="calendar-right">
+        <p className="section-title">Upcoming</p>
         {upcoming.length === 0 ? (
-          <p>No upcoming events.</p>
+          <p className="empty-state">No upcoming events.</p>
         ) : (
-          <ul style={{ listStyle: 'none', padding: 0 }}>
+          <ul className="upcoming-list">
             {upcoming.map((ev) => (
-              <li key={ev.id} style={{ marginBottom: 8 }}>
+              <li key={ev.id} className="upcoming-item">
                 <span
-                  style={{
-                    display: 'inline-block',
-                    padding: '1px 6px',
-                    borderRadius: 4,
-                    backgroundColor: TYPE_COLORS[ev.type] ?? '#eee',
-                    fontSize: 11,
-                    marginRight: 8,
-                  }}
+                  className="event-type-badge"
+                  style={{ backgroundColor: TYPE_COLORS[ev.type] ?? '#eee' }}
                 >
                   {ev.type}
                 </span>
-                <span>{ev.date} — {ev.title}</span>
+                <span className="upcoming-title">{ev.title}</span>
+                <span className="upcoming-date">{ev.date}</span>
               </li>
             ))}
           </ul>

@@ -3,99 +3,77 @@ import { useState } from 'react';
 const EVENT_TYPES = ['Test', 'Quiz', 'Assignment', 'Deadline'];
 
 export default function AddEventModal({ courses, initialDate, onAddEvent, onClose }) {
-  const [title, setTitle] = useState('');
-  const [type, setType] = useState(EVENT_TYPES[0]);
-  const [date, setDate] = useState(initialDate ?? '');
+  const [title,    setTitle]    = useState('');
+  const [type,     setType]     = useState(EVENT_TYPES[0]);
   const [courseId, setCourseId] = useState('');
 
   const handleSubmit = (e) => {
     e.preventDefault();
     const trimmed = title.trim();
     if (!trimmed) return;
-    onAddEvent({
-      title: trimmed,
-      type,
-      date,
-      courseId: courseId || null,
-    });
+    onAddEvent({ title: trimmed, type, date: initialDate, courseId: courseId || null });
     onClose();
   };
 
   return (
     <div
-      role="dialog"
-      aria-modal="true"
-      style={{
-        position: 'fixed',
-        inset: 0,
-        backgroundColor: 'rgba(0,0,0,0.35)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        zIndex: 100,
-      }}
+      className="modal-backdrop"
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
-      <div style={{ backgroundColor: '#fff', borderRadius: 10, padding: 24, minWidth: 320 }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-          <h2 style={{ margin: 0 }}>Add Event</h2>
-          <button onClick={onClose} aria-label="Close">✕</button>
+      <div className="modal-card">
+        <div className="modal-header">
+          <h2 className="modal-title">Add Event</h2>
+          <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>{initialDate}</span>
+          <button className="modal-close" onClick={onClose} aria-label="Close">✕</button>
         </div>
 
-        <form onSubmit={handleSubmit}>
-          <label>
-            Title
+        <form className="modal-form" onSubmit={handleSubmit}>
+          <div className="form-field">
+            <label className="form-label" htmlFor="ev-title">Title</label>
             <input
+              id="ev-title"
               type="text"
+              className="input"
+              style={{ borderRadius: 12 }}
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="Event title"
               required
-              style={{ display: 'block', width: '100%', marginBottom: 12 }}
             />
-          </label>
+          </div>
 
-          <label>
-            Type
+          <div className="form-field">
+            <label className="form-label" htmlFor="ev-type">Type</label>
             <select
+              id="ev-type"
+              className="select"
               value={type}
               onChange={(e) => setType(e.target.value)}
-              style={{ display: 'block', width: '100%', marginBottom: 12 }}
             >
               {EVENT_TYPES.map((t) => (
                 <option key={t} value={t}>{t}</option>
               ))}
             </select>
-          </label>
+          </div>
 
-          <label>
-            Date
-            <input
-              type="date"
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
-              required
-              style={{ display: 'block', width: '100%', marginBottom: 12 }}
-            />
-          </label>
-
-          <label>
-            Course (optional)
+          <div className="form-field">
+            <label className="form-label" htmlFor="ev-course">Course (optional)</label>
             <select
+              id="ev-course"
+              className="select"
               value={courseId}
               onChange={(e) => setCourseId(e.target.value)}
-              style={{ display: 'block', width: '100%', marginBottom: 16 }}
             >
               <option value="">None</option>
               {courses.map((c) => (
                 <option key={c.id} value={c.id}>{c.name}</option>
               ))}
             </select>
-          </label>
+          </div>
 
-          <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
-            <button type="button" onClick={onClose}>Cancel</button>
-            <button type="submit">Add Event</button>
+          <div className="modal-actions">
+            <button type="button" className="btn btn-ghost" onClick={onClose}>Cancel</button>
+            <button type="submit" className="btn btn-primary">Add Event</button>
           </div>
         </form>
       </div>

@@ -1,25 +1,19 @@
 function calcStreak(sessions) {
   if (!sessions.length) return 0;
-
-  const days = new Set(
-    sessions.map((s) => new Date(s.completedAt).toDateString())
-  );
-
+  const days = new Set(sessions.map((s) => new Date(s.completedAt).toDateString()));
   let streak = 0;
   const cursor = new Date();
-
   while (days.has(cursor.toDateString())) {
     streak++;
     cursor.setDate(cursor.getDate() - 1);
   }
-
   return streak;
 }
 
 export default function StatsPanel({ sessions, courses }) {
   const totalSessions = sessions.length;
-  const totalMinutes = sessions.reduce((sum, s) => sum + (s.duration ?? 0), 0);
-  const streak = calcStreak(sessions);
+  const totalMinutes  = sessions.reduce((sum, s) => sum + (s.duration ?? 0), 0);
+  const streak        = calcStreak(sessions);
 
   const courseMap = Object.fromEntries(courses.map((c) => [c.id, c]));
 
@@ -30,49 +24,46 @@ export default function StatsPanel({ sessions, courses }) {
   }, {});
 
   return (
-    <div>
-      <h2>Stats</h2>
-
-      <p>Total sessions: {totalSessions}</p>
-      <p>Total minutes studied: {totalMinutes}</p>
-      <p>Current streak: {streak} {streak === 1 ? 'day' : 'days'}</p>
+    <div className="stats-page">
+      <div className="stats-grid">
+        <div className="stat-card">
+          <div className="stat-value">{totalSessions}</div>
+          <div className="stat-label">Sessions</div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-value">{totalMinutes}</div>
+          <div className="stat-label">Minutes Studied</div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-value">{streak}</div>
+          <div className="stat-label">Day Streak</div>
+        </div>
+      </div>
 
       {totalSessions > 0 && (
-        <div>
-          <h3>Sessions by course</h3>
-          {Object.entries(countByCourse).map(([courseId, count]) => {
-            const course = courseMap[courseId];
-            const label = course?.name ?? 'No course';
-            const color = course?.color ?? '#ccc';
-            const pct = Math.round((count / totalSessions) * 100);
+        <div className="card">
+          <p className="section-title">Sessions by Course</p>
+          <div className="course-bar-row">
+            {Object.entries(countByCourse).map(([courseId, count]) => {
+              const course = courseMap[courseId];
+              const label  = course?.name  ?? 'No course';
+              const color  = course?.color ?? '#ccc';
+              const pct    = Math.round((count / totalSessions) * 100);
 
-            return (
-              <div key={courseId}>
-                <span
-                  style={{
-                    display: 'inline-block',
-                    width: 10,
-                    height: 10,
-                    borderRadius: '50%',
-                    backgroundColor: color,
-                    marginRight: 6,
-                  }}
-                />
-                <span>{label}</span>
-                <span> — {count} ({pct}%)</span>
-                <div
-                  style={{
-                    height: 8,
-                    width: `${pct}%`,
-                    backgroundColor: color,
-                    borderRadius: 4,
-                    marginTop: 2,
-                    marginBottom: 8,
-                  }}
-                />
-              </div>
-            );
-          })}
+              return (
+                <div key={courseId} className="course-bar-item">
+                  <div className="course-bar-label">
+                    <span className="timer-dot" style={{ backgroundColor: color }} />
+                    <span>{label}</span>
+                    <span className="course-bar-pct">{count} ({pct}%)</span>
+                  </div>
+                  <div className="course-bar-track">
+                    <div className="course-bar-fill" style={{ width: `${pct}%`, backgroundColor: color }} />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </div>
       )}
     </div>

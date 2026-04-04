@@ -12,15 +12,16 @@ export default function AddCourseForm({ onAddCourse }) {
   };
 
   return (
-    <form onSubmit={handleSubmit}>
+    <form className="add-course-form" onSubmit={handleSubmit}>
       <input
         type="text"
+        className="input"
         placeholder="Course name"
         value={name}
         onChange={(e) => setName(e.target.value)}
         required
       />
-      <button type="submit">Add</button>
+      <button type="submit" className="btn btn-primary">Add</button>
     </form>
   );
 }

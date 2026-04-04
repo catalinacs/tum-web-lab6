@@ -11,9 +11,9 @@ function formatTime(seconds) {
 
 export default function Timer({ selectedCourse, onSessionComplete }) {
   const [workMinutes, setWorkMinutes] = useState(DEFAULT_WORK_MINUTES);
-  const [mode, setMode] = useState('work');
-  const [timeLeft, setTimeLeft] = useState(DEFAULT_WORK_MINUTES * 60);
-  const [isRunning, setIsRunning] = useState(false);
+  const [mode, setMode]               = useState('work');
+  const [timeLeft, setTimeLeft]       = useState(DEFAULT_WORK_MINUTES * 60);
+  const [isRunning, setIsRunning]     = useState(false);
   const [sessionsCount, setSessionsCount] = useState(0);
 
   const modeRef = useRef(mode);
@@ -73,54 +73,47 @@ export default function Timer({ selectedCourse, onSessionComplete }) {
   };
 
   return (
-    <div>
-      <h2>Timer</h2>
-
-      <div>
-        <label>
-          Duration (minutes){' '}
-          <input
-            type="number"
-            min={1}
-            max={180}
-            value={workMinutes}
-            disabled={isRunning}
-            onChange={(e) => {
-              const val = Math.max(1, Math.min(180, Number(e.target.value)));
-              if (!isNaN(val)) handleDurationChange(val);
-            }}
-          />
-        </label>
+    <div className="timer-page">
+      <div className="timer-duration-row">
+        <label htmlFor="timer-duration">Duration</label>
+        <input
+          id="timer-duration"
+          type="number"
+          className="timer-duration-input"
+          min={1}
+          max={180}
+          value={workMinutes}
+          disabled={isRunning}
+          onChange={(e) => {
+            const val = Math.max(1, Math.min(180, Number(e.target.value)));
+            if (!isNaN(val)) handleDurationChange(val);
+          }}
+        />
+        <span>min</span>
       </div>
 
-      <p>{mode === 'work' ? 'Work' : 'Break'}</p>
+      <div className="timer-circle">
+        <span className="timer-mode-label">{mode === 'work' ? 'Work' : 'Break'}</span>
+        <span className="timer-time">{formatTime(timeLeft)}</span>
+        {selectedCourse ? (
+          <span className="timer-course">
+            <span className="timer-dot" style={{ backgroundColor: selectedCourse.color }} />
+            {selectedCourse.name}
+          </span>
+        ) : (
+          <span className="timer-course">No course selected</span>
+        )}
+      </div>
 
-      {selectedCourse ? (
-        <p>
-          <span
-            style={{
-              display: 'inline-block',
-              width: 10,
-              height: 10,
-              borderRadius: '50%',
-              backgroundColor: selectedCourse.color,
-              marginRight: 6,
-            }}
-          />
-          {selectedCourse.name}
-        </p>
-      ) : (
-        <p>No course selected — go to Courses to pick one.</p>
-      )}
+      <div className="timer-controls">
+        <button className="btn-timer-primary" onClick={() => setIsRunning((r) => !r)}>
+          {isRunning ? 'Pause' : 'Start'}
+        </button>
+        <button className="btn btn-ghost" onClick={handleReset}>Reset</button>
+        <button className="btn btn-ghost" onClick={handleSkip}>Skip</button>
+      </div>
 
-      <p>{formatTime(timeLeft)}</p>
-      <p>Sessions completed: {sessionsCount}</p>
-
-      <button onClick={() => setIsRunning((r) => !r)}>
-        {isRunning ? 'Pause' : 'Start'}
-      </button>
-      <button onClick={handleReset}>Reset</button>
-      <button onClick={handleSkip}>Skip</button>
+      <p className="timer-sessions">Sessions completed: {sessionsCount}</p>
     </div>
   );
 }
