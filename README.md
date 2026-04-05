@@ -3,6 +3,10 @@
 ## Description
 A client-side study productivity app built with React + Vite. StudySync helps students manage their courses, study sessions, flashcards, and upcoming events all in one place — with a pastel aesthetic and full light/dark theme support.
 
+## Live Demo
+
+[StudySync](https://catalinacs.github.io/tum-web-lab6)
+
 ## Features
 
 - **Home Dashboard** — See upcoming events grouped by urgency (Today / This Week / Later), dismiss events, and get a daily motivational quote
@@ -26,10 +30,6 @@ A client-side study productivity app built with React + Vite. StudySync helps st
 - HTML5 Drag and Drop API for flashcard reordering
 - `localStorage` for client-side persistence
 - Google Fonts: Righteous, Allura, Playfair Display, PT Serif, Pinyon Script
-
-## Live Demo
-
-[StudySync](https://catalinacs.github.io/tum-web-lab6)
 
 ## How to run locally
 
