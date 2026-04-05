@@ -1,16 +1,39 @@
-# React + Vite
+# StudySync
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## Description
+A client-side study productivity app built with React + Vite. StudySync helps students manage their courses, study sessions, flashcards, and upcoming events all in one place — with a pastel aesthetic and full light/dark theme support.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- **Home Dashboard** — See upcoming events grouped by urgency (Today / This Week / Later), dismiss events, and get a daily motivational quote
+- **Courses** — Add and manage your courses, each auto-assigned a pastel color; log study sessions directly from the course list
+- **Pomodoro Timer** — Customizable work/break timer linked to a selected course; sessions are automatically logged on completion
+- **Flashcards** — Create decks per course:
+  - Side-by-side Term / Definition layout
+  - Drag-and-drop card reordering
+  - Auto-resizing textareas
+  - Click deck name to view and edit cards
+- **Flashcard Study Mode** — Flip cards with a 3D animation, mark cards as *Know* or *Still Learning*, track progress across rounds, and keep studying wrong cards until all are mastered; smooth slide animation between cards
+- **Calendar** — Monthly calendar view; click any day to add events (Test, Quiz, Assignment, Deadline); upcoming events listed on the right
+- **Stats** — Track total sessions, total minutes studied, and your current daily streak
+- **Light / Dark theme** — Toggle between pastel light mode and dark mode; preference persists across sessions
+- **Persistent data** — All courses, sessions, events, and flashcard decks saved in `localStorage`
 
-## React Compiler
+## Tech Stack
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- React 18 + Vite
+- CSS custom properties for theming (light/dark via `data-theme` attribute)
+- HTML5 Drag and Drop API for flashcard reordering
+- `localStorage` for client-side persistence
+- Google Fonts: Righteous, Allura, Playfair Display, PT Serif, Pinyon Script
 
-## Expanding the ESLint configuration
+## Live Demo
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+[StudySync](https://catalinacs.github.io/tum-web-lab6)
+
+## How to run locally
+
+```bash
+npm install
+npm run dev
+```

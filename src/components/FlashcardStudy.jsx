@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 
 function shuffleArray(arr) {
   const a = [...arr];
@@ -34,9 +34,20 @@ export default function FlashcardStudy({ deck, onBack }) {
   const [history, setHistory]         = useState([]);
   const [roundDone, setRoundDone]     = useState(false);
   const [allDone, setAllDone]         = useState(false);
+  const [animState, setAnimState]     = useState(''); // 'exit-left' | 'exit-right' | 'enter' | ''
 
   const card = cards[index];
   const total = cards.length;
+
+  const animateThen = useCallback((direction, callback) => {
+    setAnimState(direction === 'left' ? 'exit-left' : 'exit-right');
+    setTimeout(() => {
+      callback();
+      setIsFlipped(false);
+      setAnimState('enter');
+      setTimeout(() => setAnimState(''), 220);
+    }, 200);
+  }, []);
 
   const advance = (cardId, isKnown) => {
     setHistory(h => [...h, { index, cardId, wasKnown: known.has(cardId), wasLearning: learning.has(cardId) }]);
@@ -49,41 +60,29 @@ export default function FlashcardStudy({ deck, onBack }) {
       setKnown(prev => { const s = new Set(prev); s.delete(cardId); return s; });
     }
 
-    if (index + 1 >= total) {
-      // End of round — check remaining learning cards
-      const newLearning = new Set(learning);
-      if (isKnown) newLearning.delete(cardId); else newLearning.add(cardId);
-      const newKnown = new Set(known);
-      if (isKnown) newKnown.add(cardId); else newKnown.delete(cardId);
-
-      const learningCards = deck.cards.filter(c => newLearning.has(c.id));
-      if (learningCards.length === 0) {
-        setAllDone(true);
+    animateThen(isKnown ? 'right' : 'left', () => {
+      if (index + 1 >= total) {
+        const newLearning = new Set(learning);
+        if (isKnown) newLearning.delete(cardId); else newLearning.add(cardId);
+        const newKnown = new Set(known);
+        if (isKnown) newKnown.add(cardId); else newKnown.delete(cardId);
+        const learningCards = deck.cards.filter(c => newLearning.has(c.id));
+        if (learningCards.length === 0) setAllDone(true);
+        else setRoundDone(true);
       } else {
-        setRoundDone(true);
+        setIndex(i => i + 1);
       }
-    } else {
-      setIndex(i => i + 1);
-      setIsFlipped(false);
-    }
+    });
   };
 
   const handleUndo = () => {
     if (history.length === 0) return;
     const last = history[history.length - 1];
     setHistory(h => h.slice(0, -1));
-    setIndex(last.index);
-    setIsFlipped(false);
-    // Restore previous status
-    setKnown(prev => {
-      const s = new Set(prev);
-      if (last.wasKnown) s.add(last.cardId); else s.delete(last.cardId);
-      return s;
-    });
-    setLearning(prev => {
-      const s = new Set(prev);
-      if (last.wasLearning) s.add(last.cardId); else s.delete(last.cardId);
-      return s;
+    animateThen('left', () => {
+      setIndex(last.index);
+      setKnown(prev => { const s = new Set(prev); if (last.wasKnown) s.add(last.cardId); else s.delete(last.cardId); return s; });
+      setLearning(prev => { const s = new Set(prev); if (last.wasLearning) s.add(last.cardId); else s.delete(last.cardId); return s; });
     });
   };
 
@@ -174,7 +173,7 @@ export default function FlashcardStudy({ deck, onBack }) {
         </span>
       </div>
 
-      <div className="flashcard-scene" onClick={() => setIsFlipped(f => !f)}>
+      <div className={`flashcard-scene${animState ? ` flashcard-scene--${animState}` : ''}`} onClick={() => !animState && setIsFlipped(f => !f)}>
         <div className={`flashcard-inner${isFlipped ? ' flipped' : ''}`}>
           <div className="flashcard-face flashcard-front">
             <span className="flashcard-label">Term</span>

@@ -2,7 +2,7 @@
 :root {
   --bg:              #f8f7ff;
   --bg-card:         #ffffff;
-  --bg-sidebar:      #fef0f5;
+  --bg-sidebar:      #d6eef8;
   --accent-pink:     #f4a7b9;
   --accent-green:    #a8c5a0;
   --accent-lavender: #c3b1e1;
@@ -60,7 +60,7 @@ input, select, textarea { font-family: 'Righteous', sans-serif; }
 .sidebar {
   width: 240px;
   flex-shrink: 0;
-  background: #eef7ee;
+  background: var(--bg-sidebar);
   border-right: 1px solid var(--border);
   padding: 2rem 1.5rem;
   display: flex;
@@ -314,6 +314,7 @@ input, select, textarea { font-family: 'Righteous', sans-serif; }
   color: #ffffff;
 }
 
+
 .dashboard-event-info {
   display: flex;
   flex-direction: column;
@@ -329,6 +330,10 @@ input, select, textarea { font-family: 'Righteous', sans-serif; }
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+[data-theme='dark'] .dashboard-event-title {
+  color: #ffffff !important;
 }
 
 .dashboard-event-course {
@@ -387,6 +392,7 @@ input, select, textarea { font-family: 'Righteous', sans-serif; }
 
 .dashboard-section-label[data-urgency='today'] { background: #f4a7b9; color: #5c2a2a; }
 .dashboard-section-label[data-urgency='week']  { background: #6a9e72; color: #ffffff; }
+[data-theme='dark'] .dashboard-section-label[data-urgency='week'] { background: #3d8c4a; }
 .dashboard-section-label[data-urgency='later'] { background: var(--border); color: var(--text-muted); }
 
 .dashboard-section-count {
@@ -822,6 +828,14 @@ input, select, textarea { font-family: 'Righteous', sans-serif; }
   perspective: 1000px;
   cursor: pointer;
 }
+
+@keyframes fc-exit-left  { from { opacity:1; transform: translateX(0);    } to { opacity:0; transform: translateX(-50px); } }
+@keyframes fc-exit-right { from { opacity:1; transform: translateX(0);    } to { opacity:0; transform: translateX(50px);  } }
+@keyframes fc-enter      { from { opacity:0; transform: translateX(40px); } to { opacity:1; transform: translateX(0);     } }
+
+.flashcard-scene--exit-left  { animation: fc-exit-left  0.2s ease forwards; pointer-events: none; }
+.flashcard-scene--exit-right { animation: fc-exit-right 0.2s ease forwards; pointer-events: none; }
+.flashcard-scene--enter      { animation: fc-enter      0.22s ease forwards; }
 
 .flashcard-inner {
   width: 100%;
@@ -1328,7 +1342,10 @@ input, select, textarea { font-family: 'Righteous', sans-serif; }
 }
 
 .upcoming-date { color: var(--text-muted); font-size: 0.8rem; white-space: nowrap; }
-.upcoming-title { font-weight: 700; flex: 1; }
+.upcoming-title { font-weight: 700; flex: 1; color: var(--text); }
+
+[data-theme='dark'] .upcoming-title { color: #ffffff !important; }
+[data-theme='dark'] .upcoming-item { background: #000000; color: #ffffff; }
 
 /* ── Modal ── */
 .modal-backdrop {
