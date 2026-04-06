@@ -14,18 +14,37 @@ export default function PomodoroTimer({
   onReset, onDurationChange,
 }) {
   const fullTime = mode === 'work' ? workMinutes * 60 : breakSeconds;
-  const audioCtxRef = useRef(null);
+  const audioCtxRef  = useRef(null);
+  const keepAliveRef = useRef(null); // silent oscillator that keeps AudioContext warm
+
+  const startKeepAlive = (ctx) => {
+    if (keepAliveRef.current) return; // already running
+    const osc  = ctx.createOscillator();
+    const gain = ctx.createGain();
+    gain.gain.value = 0; // completely silent
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start();
+    keepAliveRef.current = osc;
+  };
+
+  const stopKeepAlive = () => {
+    if (keepAliveRef.current) {
+      try { keepAliveRef.current.stop(); } catch {}
+      keepAliveRef.current = null;
+    }
+  };
 
   const scheduleNotes = (ctx) => {
-    const notes = [523, 659, 784, 1047, 784, 1047, 1319];
+    const notes   = [523, 659, 784, 1047, 784, 1047, 1319];
     const noteLen = 0.45;
-    const now = ctx.currentTime;
+    const now     = ctx.currentTime;
     notes.forEach((freq, i) => {
-      const osc = ctx.createOscillator();
+      const osc  = ctx.createOscillator();
       const gain = ctx.createGain();
       osc.connect(gain);
       gain.connect(ctx.destination);
-      osc.type = 'sine';
+      osc.type           = 'sine';
       osc.frequency.value = freq;
       const t0 = now + i * noteLen;
       const t1 = t0 + noteLen * 0.85;
@@ -40,18 +59,32 @@ export default function PomodoroTimer({
   const playChime = () => {
     const ctx = audioCtxRef.current;
     if (!ctx) return;
+    // Context should already be running (kept warm by silent oscillator),
+    // but resume just in case.
     if (ctx.state === 'suspended') {
       ctx.resume().then(() => scheduleNotes(ctx));
     } else {
       scheduleNotes(ctx);
     }
+    stopKeepAlive(); // no longer needed after chime
   };
 
-  // chimeCount is incremented in App.jsx ONLY when a work session finishes.
-  // Skip the initial mount (chimeCount === 0).
+  // Start/stop the keep-alive oscillator in sync with isRunning
+  useEffect(() => {
+    const ctx = audioCtxRef.current;
+    if (!ctx) return;
+    if (isRunning) {
+      startKeepAlive(ctx);
+    } else {
+      stopKeepAlive();
+    }
+  }, [isRunning]);
+
+  // Play chime only when App.jsx signals a completed work session
   useEffect(() => {
     if (chimeCount > 0) playChime();
   }, [chimeCount]);
+
   return (
     <div className="timer-page">
       <div className="timer-duration-row">
@@ -91,8 +124,11 @@ export default function PomodoroTimer({
         <div className="timer-controls">
           <button className="btn-timer-primary" onClick={() => {
             if (!isRunning) {
-              if (!audioCtxRef.current) audioCtxRef.current = new AudioContext();
-              else if (audioCtxRef.current.state === 'suspended') audioCtxRef.current.resume();
+              if (!audioCtxRef.current) {
+                audioCtxRef.current = new AudioContext();
+              } else if (audioCtxRef.current.state === 'suspended') {
+                audioCtxRef.current.resume();
+              }
             }
             setIsRunning(!isRunning);
           }}>

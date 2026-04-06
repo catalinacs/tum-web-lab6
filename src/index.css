@@ -1228,6 +1228,7 @@ input, select, textarea { font-family: 'Righteous', sans-serif; }
 
 .btn-timer-primary {
   padding: 0.3rem 1.2rem;
+  min-width: 7rem;
   border-radius: 999px;
   font-size: 0.9rem;
   font-weight: 700;
@@ -1240,6 +1241,10 @@ input, select, textarea { font-family: 'Righteous', sans-serif; }
   cursor: pointer;
 }
 .btn-timer-primary:hover { opacity: 0.9; transform: translateY(-1px); }
+
+.timer-controls .btn {
+  min-width: 7rem;
+}
 
 .timer-sessions {
   font-size: 0.85rem;
