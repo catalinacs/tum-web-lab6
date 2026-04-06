@@ -28,7 +28,9 @@ export default function AddEventModal({ courses, initialDate, onAddEvent, onClos
       <div className="modal-card">
         <div className="modal-header">
           <h2 className="modal-title">{editing ? 'Edit Event' : 'Add Event'}</h2>
-          <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>{editingEvent?.date ?? initialDate}</span>
+          <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+            {new Date((editingEvent?.date ?? initialDate) + 'T00:00:00').toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' })}
+          </span>
           <button className="modal-close" onClick={onClose} aria-label="Close">✕</button>
         </div>
 

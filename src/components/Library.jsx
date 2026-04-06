@@ -13,9 +13,6 @@ export default function Library({
   const [activeTab, setActiveTab] = useState('Flashcard sets');
   const [search, setSearch] = useState('');
 
-  const filteredDecks = decks.filter(d =>
-    d.name.toLowerCase().includes(search.toLowerCase())
-  );
 
   return (
     <div className="library-page">
@@ -45,7 +42,8 @@ export default function Library({
             />
           </div>
           <FlashcardDecks
-            decks={filteredDecks}
+            decks={decks}
+            search={search}
             courses={courses}
             onAddDeck={onAddDeck}
             onDeleteDeck={onDeleteDeck}

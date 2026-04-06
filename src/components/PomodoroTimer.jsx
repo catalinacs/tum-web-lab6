@@ -6,11 +6,12 @@ function formatTime(seconds) {
 
 export default function PomodoroTimer({
   selectedCourse,
-  workMinutes, setWorkMinutes,
+  workMinutes, breakSeconds, setWorkMinutes,
   mode, timeLeft, isRunning, setIsRunning,
   sessionsCount,
   onReset, onSkip, onDurationChange,
 }) {
+  const fullTime = mode === 'work' ? workMinutes * 60 : breakSeconds;
   return (
     <div className="timer-page">
       <div className="timer-duration-row">
@@ -49,7 +50,7 @@ export default function PomodoroTimer({
 
         <div className="timer-controls">
           <button className="btn-timer-primary" onClick={() => setIsRunning(!isRunning)}>
-            {isRunning ? 'Pause' : timeLeft === workMinutes * 60 && mode === 'work' ? 'Start' : 'Continue'}
+            {isRunning ? 'Pause' : timeLeft === fullTime ? 'Start' : 'Continue'}
           </button>
           <button className="btn btn-ghost" onClick={onReset}>Reset</button>
           <button className="btn btn-ghost" onClick={onSkip}>Skip</button>

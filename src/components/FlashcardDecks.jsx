@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-export default function FlashcardDecks({ decks, courses, onAddDeck, onDeleteDeck, onStudy, onEdit }) {
+export default function FlashcardDecks({ decks, courses, search = '', onAddDeck, onDeleteDeck, onStudy, onEdit }) {
   const [deckName, setDeckName]     = useState('');
   const [deckCourse, setDeckCourse] = useState('');
 
@@ -67,7 +67,7 @@ export default function FlashcardDecks({ decks, courses, onAddDeck, onDeleteDeck
                 {groupDecks.map(deck => (
                   <div
                     key={deck.id}
-                    className="deck-card"
+                    className={`deck-card${search && deck.name.toLowerCase().includes(search.toLowerCase()) ? ' deck-card--match' : search ? ' deck-card--dim' : ''}`}
                     style={{ '--deck-border-color': course?.color ?? '#a8d8ea' }}
                   >
                     <div className="deck-info" onClick={() => onEdit(deck)} style={{ cursor: 'pointer' }}>

@@ -53,7 +53,9 @@ function EventCard({ ev, courseMap, onDismiss }) {
           </span>
         )}
       </div>
-      <span className="dashboard-event-date">{ev.date}</span>
+      <span className="dashboard-event-date">
+        {new Date(ev.date + 'T00:00:00').toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' })}
+      </span>
       <button className="dashboard-dismiss" onClick={() => onDismiss(ev.id)} title="Dismiss">✕</button>
     </div>
   );

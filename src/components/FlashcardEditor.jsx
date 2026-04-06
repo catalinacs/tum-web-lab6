@@ -230,8 +230,8 @@ export default function FlashcardEditor({ deck, onBack, onAddCard, onDeleteCard,
         <button className="add-card-btn" onClick={handleAddCard}>Add a card</button>
         <button
           className="btn btn-primary flashcard-study-now-btn"
-          onClick={() => onStudy(deck)}
-          disabled={deck.cards.length === 0}
+          onClick={() => { if (newQ.trim() && newA.trim()) handleAddCard(); onStudy(deck); }}
+          disabled={deck.cards.length === 0 && !(newQ.trim() && newA.trim())}
         >
           Study
         </button>

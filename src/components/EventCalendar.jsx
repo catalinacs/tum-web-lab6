@@ -107,7 +107,7 @@ export default function EventCalendar({ events, onDayClick }) {
                   {ev.type}
                 </span>
                 <span className="upcoming-title">{ev.title}</span>
-                <span className="upcoming-date">{ev.date}</span>
+                <span className="upcoming-date">{new Date(ev.date + 'T00:00:00').toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' })}</span>
               </li>
             ))}
           </ul>

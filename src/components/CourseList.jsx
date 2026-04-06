@@ -48,7 +48,7 @@ export default function CourseList({ courses, setCourses, setSelectedCourse, onR
             </span>
           )}
           <div className="course-actions">
-            <button className="btn btn-primary" onClick={() => setSelectedCourse(course)}>
+            <button className="btn btn-primary course-study-now-btn" onClick={() => setSelectedCourse(course)}>
               Study Now
             </button>
             <button className="btn btn-danger course-delete-btn" onClick={() => handleDelete(course.id)} title="Delete">

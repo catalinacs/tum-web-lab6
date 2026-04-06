@@ -538,6 +538,20 @@ input, select, textarea { font-family: 'Righteous', sans-serif; }
   border-left-color: var(--deck-border-color, #a8d8ea);
 }
 
+.deck-card--match {
+  box-shadow: 0 0 0 2.5px #a8d8ea, 0 4px 16px rgba(168, 216, 234, 0.35);
+  transition: box-shadow 0.2s;
+}
+
+[data-theme='dark'] .deck-card--match {
+  box-shadow: 0 0 0 2.5px #f4a7b9, 0 4px 16px rgba(244, 167, 185, 0.35);
+}
+
+.deck-card--dim {
+  opacity: 0.35;
+  transition: opacity 0.2s;
+}
+
 .deck-icon-thumb {
   width: 40px;
   height: 40px;
@@ -1367,6 +1381,11 @@ input, select, textarea { font-family: 'Righteous', sans-serif; }
   outline: none;
   flex: 1;
   min-width: 0;
+}
+
+.course-study-now-btn {
+  font-size: 0.8rem;
+  padding: 0.3rem 0.9rem;
 }
 
 .course-delete-btn {
