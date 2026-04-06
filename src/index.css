@@ -1319,7 +1319,7 @@ input, select, textarea { font-family: 'Righteous', sans-serif; }
 
 .calendar-right { flex: 1; }
 
-.upcoming-list { display: flex; flex-direction: column; gap: 0.6rem; }
+.upcoming-list { display: flex; flex-direction: column; gap: 0.6rem; width: 100%; }
 
 .upcoming-item {
   display: flex;
@@ -1451,4 +1451,118 @@ input, select, textarea { font-family: 'Righteous', sans-serif; }
 
 .theme-toggle-btn[aria-pressed='true'] .theme-toggle-thumb {
   transform: translateX(20px);
+}
+
+/* ── Responsive ── */
+
+/* Desktop: hide mobile-only elements */
+.mobile-top-bar   { display: none; }
+.mobile-bottom-nav { display: none; }
+
+@media (max-width: 768px) {
+  /* Hide desktop sidebar */
+  .sidebar { display: none !important; }
+
+  /* Mobile top bar */
+  .mobile-top-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.6rem 1rem;
+    background: var(--bg-sidebar);
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    width: 100%;
+    flex-shrink: 0;
+  }
+
+  .mobile-logo {
+    height: 28px;
+    width: auto;
+  }
+
+  /* Bottom nav bar */
+  .mobile-bottom-nav {
+    display: flex;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 50;
+    background: var(--bg-sidebar);
+    border-top: 1px solid var(--border);
+    padding: 0.4rem 0 0.6rem;
+  }
+
+  .mobile-nav-btn {
+    flex: 1;
+    background: none;
+    border: none;
+    font-family: 'Righteous', sans-serif;
+    font-size: 0.62rem;
+    color: var(--text-muted);
+    padding: 0.3rem 0.2rem;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .mobile-nav-btn[aria-current='page'] {
+    color: var(--text);
+    font-weight: 700;
+  }
+
+  /* Main layout */
+  .app-layout {
+    flex-direction: column;
+  }
+
+  .main-content {
+    padding: 1rem;
+    padding-bottom: 5.5rem;
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+
+  /* Cards */
+  .card { padding: 1rem; }
+
+  /* Event cards — title can wrap, date sits below as subtitle */
+  .dashboard-event-title {
+    white-space: normal;
+    overflow: visible;
+    text-overflow: unset;
+  }
+
+  /* Upcoming in calendar — allow wrapping */
+  .upcoming-item {
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+
+  .upcoming-title {
+    white-space: normal;
+  }
+
+  /* Flashcard scene full width */
+  .flashcard-scene { width: 100%; }
+
+  .flashcard-progress-bar-row,
+  .flashcard-nav { width: 100%; max-width: 100%; }
+
+  /* Calendar stacks on mobile */
+  .calendar-page { flex-direction: column; }
+  .calendar-right { width: 100%; }
+
+  /* Deck actions wrap */
+  .deck-actions { flex-wrap: wrap; gap: 0.4rem; }
+
+  /* Timer */
+  .timer-circle { width: 200px; height: 200px; }
+
+  /* Stats grid */
+  .stats-grid { grid-template-columns: 1fr 1fr; }
 }

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import studySyncLogo from './assets/studysync-logo.png';
 import { useLocalStorage } from './hooks/useLocalStorage';
 import PomodoroTimer from './components/PomodoroTimer';
@@ -31,7 +31,21 @@ function App() {
   const [events, setEvents]     = useLocalStorage('studysync_events', []);
   const [theme, setTheme]       = useLocalStorage('studysync_theme', 'light');
   const [decks, setDecks]                 = useLocalStorage('studysync_decks', []);
-  const [activeView, setActiveView]       = useState('home');
+  const VALID_VIEWS = NAV_ITEMS.map(i => i.id);
+  const getHashView = () => {
+    const hash = window.location.hash.replace('#', '');
+    return VALID_VIEWS.includes(hash) ? hash : 'home';
+  };
+  const [activeView, setActiveViewState] = useState(getHashView);
+  const setActiveView = (view) => {
+    window.location.hash = view;
+    setActiveViewState(view);
+  };
+  useEffect(() => {
+    const onHashChange = () => setActiveViewState(getHashView());
+    window.addEventListener('hashchange', onHashChange);
+    return () => window.removeEventListener('hashchange', onHashChange);
+  }, []);
   const [selectedCourse, setSelectedCourse] = useState(null);
   const [modalDate, setModalDate]         = useState(null);
   const [studyingDeck, setStudyingDeck]   = useState(null);
@@ -196,7 +210,6 @@ function App() {
             <button
               key={item.id}
               className="nav-btn"
-              data-view={item.id}
               onClick={() => setActiveView(item.id)}
               aria-current={activeView === item.id ? 'page' : undefined}
             >
@@ -206,7 +219,26 @@ function App() {
         </nav>
         <ThemeToggle theme={theme} setTheme={setTheme} />
       </aside>
+
+      <div className="mobile-top-bar">
+        <img src={studySyncLogo} alt="StudySync" className="mobile-logo" />
+        <ThemeToggle theme={theme} setTheme={setTheme} />
+      </div>
+
       <main className="main-content">{renderView()}</main>
+
+      <nav className="mobile-bottom-nav">
+        {NAV_ITEMS.map((item) => (
+          <button
+            key={item.id}
+            className="mobile-nav-btn"
+            onClick={() => setActiveView(item.id)}
+            aria-current={activeView === item.id ? 'page' : undefined}
+          >
+            {item.label}
+          </button>
+        ))}
+      </nav>
     </div>
   );
 }
