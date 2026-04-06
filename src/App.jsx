@@ -52,6 +52,7 @@ function App() {
   const [timerTimeLeft, setTimerTimeLeft]       = useState(timerWorkMinutes * 60);
   const [timerRunning, setTimerRunning]         = useState(false);
   const [timerSessions, setTimerSessions]       = useState(0);
+  const [chimeCount, setChimeCount]             = useState(0);
   const timerModeRef = useRef(timerMode);
   timerModeRef.current = timerMode;
   const timerWorkMinutesRef = useRef(timerWorkMinutes);
@@ -59,40 +60,35 @@ function App() {
   const selectedCourseRef = useRef(selectedCourse);
   selectedCourseRef.current = selectedCourse;
 
-  const handleTimerExpire = () => {
-    if (timerModeRef.current === 'work') {
-      handleSessionComplete(selectedCourseRef.current, timerWorkMinutesRef.current);
-      setTimerSessions(n => n + 1);
-      setTimerMode('break');
-      setTimerTimeLeft(BREAK_SECONDS);
-    } else {
-      setTimerMode('work');
-      setTimerTimeLeft(timerWorkMinutesRef.current * 60);
-    }
-    setTimerRunning(false);
-  };
-
   const timerTimeLeftRef = useRef(timerTimeLeft);
   timerTimeLeftRef.current = timerTimeLeft;
 
-  // Count down — just decrement, stop at 0
   useEffect(() => {
     if (!timerRunning) return;
     const id = setInterval(() => {
       const next = timerTimeLeftRef.current - 1;
-      timerTimeLeftRef.current = Math.max(0, next);
-      setTimerTimeLeft(Math.max(0, next));
-      if (next <= 0) clearInterval(id);
+      if (next <= 0) {
+        clearInterval(id);
+        setTimerTimeLeft(0);
+        // Explicit expiry: signal chime only on work sessions, then transition
+        if (timerModeRef.current === 'work') {
+          setChimeCount(n => n + 1);
+          handleSessionComplete(selectedCourseRef.current, timerWorkMinutesRef.current);
+          setTimerSessions(n => n + 1);
+          setTimerMode('break');
+          setTimerTimeLeft(BREAK_SECONDS);
+        } else {
+          setTimerMode('work');
+          setTimerTimeLeft(timerWorkMinutesRef.current * 60);
+        }
+        setTimerRunning(false);
+      } else {
+        timerTimeLeftRef.current = next;
+        setTimerTimeLeft(next);
+      }
     }, 1000);
     return () => clearInterval(id);
   }, [timerRunning]);
-
-  // Handle expiry — fires after the render where timerTimeLeft becomes 0
-  useEffect(() => {
-    if (timerTimeLeft === 0 && timerRunning) {
-      handleTimerExpire();
-    }
-  }, [timerTimeLeft]);
 
   const handleAddCourse = (name) => {
     const color = PASTEL_COLORS[courses.length % PASTEL_COLORS.length];
@@ -236,6 +232,7 @@ function App() {
             isRunning={timerRunning}
             setIsRunning={setTimerRunning}
             sessionsCount={timerSessions}
+            chimeCount={chimeCount}
             onReset={() => setTimerTimeLeft(timerMode === 'work' ? timerWorkMinutes * 60 : BREAK_SECONDS)}
             onSkip={() => {
               setTimerRunning(false);

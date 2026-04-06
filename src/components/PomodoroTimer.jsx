@@ -10,12 +10,11 @@ export default function PomodoroTimer({
   selectedCourse,
   workMinutes, breakSeconds, setWorkMinutes,
   mode, timeLeft, isRunning, setIsRunning,
-  sessionsCount,
+  sessionsCount, chimeCount,
   onReset, onSkip, onDurationChange,
 }) {
   const fullTime = mode === 'work' ? workMinutes * 60 : breakSeconds;
   const audioCtxRef = useRef(null);
-  const prevModeRef = useRef(mode);
 
   const playChime = () => {
     const ctx = audioCtxRef.current;
@@ -41,13 +40,11 @@ export default function PomodoroTimer({
     });
   };
 
-  // Only chime when work timer hits 0
+  // chimeCount is incremented in App.jsx ONLY when a work session finishes.
+  // Skip the initial mount (chimeCount === 0).
   useEffect(() => {
-    if (timeLeft === 0 && prevModeRef.current === 'work') {
-      playChime();
-    }
-    prevModeRef.current = mode;
-  }, [timeLeft, mode]);
+    if (chimeCount > 0) playChime();
+  }, [chimeCount]);
   return (
     <div className="timer-page">
       <div className="timer-duration-row">
