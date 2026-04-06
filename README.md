@@ -9,27 +9,31 @@ A client-side study productivity app built with React + Vite. StudySync helps st
 
 ## Features
 
-- **Home Dashboard** — See upcoming events grouped by urgency (Today / This Week / Later), dismiss events, and get a daily motivational quote
-- **Courses** — Add and manage your courses, each auto-assigned a pastel color; log study sessions directly from the course list
-- **Pomodoro Timer** — Customizable work/break timer linked to a selected course; sessions are automatically logged on completion
-- **Flashcards** — Create decks per course:
-  - Side-by-side Term / Definition layout
+- **Home Dashboard** — Daily motivational quote, inline monthly calendar with day-click event editing, and a Recents section showing your latest flashcard sets
+- **Your Library** — Unified page with tabs for Flashcard Sets and Courses
+  - Flashcard sets grouped by course, with search; create decks and assign them to a course at any time
+  - Courses list with rename and delete; one-click Study Now to jump to the timer
+- **Timer** — Minimal timer with customizable duration; Start / Pause / Continue / Reset / Skip controls; audio chime on completion; sessions auto-logged on finish
+- **Flashcards** — Create and manage decks per course:
+  - Rename deck inline from the editor header
+  - Assign or reassign a deck to any course after creation
   - Drag-and-drop card reordering
-  - Auto-resizing textareas
-  - Click deck name to view and edit cards
-- **Flashcard Study Mode** — Flip cards with a 3D animation, mark cards as *Know* or *Still Learning*, track progress across rounds, and keep studying wrong cards until all are mastered; smooth slide animation between cards
-- **Calendar** — Monthly calendar view; click any day to add events (Test, Quiz, Assignment, Deadline); upcoming events listed on the right
-- **Stats** — Track total sessions, total minutes studied, and your current daily streak
-- **Light / Dark theme** — Toggle between pastel light mode and dark mode; preference persists across sessions
-- **Persistent data** — All courses, sessions, events, and flashcard decks saved in `localStorage`
+  - Auto-resizing text areas
+- **Flashcard Study Mode** — Flip cards with a 3D animation, mark cards as *Know* or *Still Learning*, track progress across rounds
+- **Calendar** — Monthly calendar embedded on the home page; click any day to view, add, edit, or delete events (Test, Quiz, Assignment, Deadline); upcoming events listed beside the calendar
+- **Stats** — Track total sessions, total minutes studied, and your current daily streak; bar chart of sessions by course; session log with per-entry delete
+- **Light / Dark theme** — Pastel light mode and dark mode; preference persists across sessions
+- **Mobile layout** — Hamburger menu on mobile, responsive calendar and card layouts
+- **Persistent data** — All data saved in `localStorage`
 
 ## Tech Stack
 
 - React 18 + Vite
 - CSS custom properties for theming (light/dark via `data-theme` attribute)
+- Web Audio API for timer completion chime
 - HTML5 Drag and Drop API for flashcard reordering
 - `localStorage` for client-side persistence
-- Google Fonts: Righteous, Allura, Playfair Display, PT Serif, Pinyon Script
+- Google Fonts: Righteous, Allura, Playfair Display
 
 ## How to run locally
 
