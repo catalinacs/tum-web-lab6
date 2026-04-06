@@ -1,4 +1,4 @@
-import studyImg from '../assets/study.png';
+import SessionLog from './SessionLog';
 
 function calcStreak(sessions) {
   if (!sessions.length) return 0;
@@ -12,7 +12,8 @@ function calcStreak(sessions) {
   return streak;
 }
 
-export default function StatsPanel({ sessions, courses }) {
+export default function StatsPanel({ sessions, setSessions, courses }) {
+  const handleDeleteSession = (id) => setSessions(prev => prev.filter(s => s.id !== id));
   const totalSessions = sessions.length;
   const totalMinutes  = sessions.reduce((sum, s) => sum + (s.duration ?? 0), 0);
   const streak        = calcStreak(sessions);
@@ -49,18 +50,18 @@ export default function StatsPanel({ sessions, courses }) {
             {Object.entries(countByCourse).map(([courseId, count]) => {
               const course = courseMap[courseId];
               const label  = course?.name  ?? 'No course';
-              const color  = course?.color ?? '#ccc';
+              const color  = course?.color;
+              const barColor = color ?? '#ccc';
               const pct    = Math.round((count / totalSessions) * 100);
 
               return (
                 <div key={courseId} className="course-bar-item">
                   <div className="course-bar-label">
-                    <span className="timer-dot" style={{ backgroundColor: color }} />
-                    <span>{label}</span>
+                    <span className="session-course-name course-bar-name">{label}</span>
                     <span className="course-bar-pct">{count} ({pct}%)</span>
                   </div>
                   <div className="course-bar-track">
-                    <div className="course-bar-fill" style={{ width: `${pct}%`, backgroundColor: color }} />
+                    <div className="course-bar-fill" style={{ width: `${pct}%`, backgroundColor: barColor }} />
                   </div>
                 </div>
               );
@@ -68,8 +69,10 @@ export default function StatsPanel({ sessions, courses }) {
           </div>
         </div>
       )}
-      <div className="stats-illustration">
-        <img src={studyImg} alt="Studying" className="stats-study-img" />
+
+      <div className="card">
+        <p className="section-title">Session Log</p>
+        <SessionLog courses={courses} sessions={sessions} onDeleteSession={handleDeleteSession} />
       </div>
     </div>
   );

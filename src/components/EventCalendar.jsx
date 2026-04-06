@@ -3,7 +3,7 @@ import { useState } from 'react';
 const TYPE_COLORS = {
   Test:       '#f4a7b9',
   Quiz:       '#a8d8ea',
-  Assignment: '#b5ead7',
+  Assignment: '#93C572',
   Deadline:   '#ffd97d',
 };
 
@@ -75,15 +75,17 @@ export default function EventCalendar({ events, onDayClick }) {
             const key       = toDateKey(viewYear, viewMonth, day);
             const hasEvents = !!eventsByDay[key];
             const isToday   = key === todayKey;
+            const isPast    = key < todayKey;
 
             let cls = 'calendar-day';
-            if (isToday)   cls += ' calendar-day--today';
-            if (hasEvents) cls += ' calendar-day--has-events';
+            if (isToday)              cls += ' calendar-day--today';
+            if (hasEvents && !isPast) cls += ' calendar-day--has-events';
+            if (hasEvents && isPast)  cls += ' calendar-day--past-events';
 
             return (
               <button key={key} className={cls} onClick={() => onDayClick && onDayClick(key)}>
                 {day}
-                {hasEvents && <span className="calendar-day-dot" />}
+                {hasEvents && !isPast && <span className="calendar-day-dot" />}
               </button>
             );
           })}

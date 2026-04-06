@@ -41,11 +41,26 @@ const BurgerIcon = () => (
   </svg>
 );
 
-export default function FlashcardEditor({ deck, onBack, onAddCard, onDeleteCard, onUpdateCard, onReorderCards, onStudy }) {
+export default function FlashcardEditor({ deck, onBack, onAddCard, onDeleteCard, onUpdateCard, onReorderCards, onStudy, onRenameDeck, onAssignCourse, courses = [] }) {
   const [newQ, setNewQ] = useState('');
   const [newA, setNewA] = useState('');
-  const [dragIndex, setDragIndex]     = useState(null);
+  const [dragIndex, setDragIndex]         = useState(null);
   const [dragOverIndex, setDragOverIndex] = useState(null);
+  const [renamingDeck, setRenamingDeck]   = useState(false);
+  const [renameValue, setRenameValue]     = useState(deck.name);
+  const renameInputRef = useRef(null);
+
+  const startRename = () => {
+    setRenameValue(deck.name);
+    setRenamingDeck(true);
+    setTimeout(() => renameInputRef.current?.select(), 0);
+  };
+
+  const commitRename = () => {
+    const trimmed = renameValue.trim();
+    if (trimmed && trimmed !== deck.name) onRenameDeck?.(deck.id, trimmed);
+    setRenamingDeck(false);
+  };
 
   const handleAddCard = () => {
     if (!newQ.trim() || !newA.trim()) return;
@@ -88,9 +103,43 @@ export default function FlashcardEditor({ deck, onBack, onAddCard, onDeleteCard,
     <div className="flashcard-editor-page">
       <div className="flashcard-study-header">
         <button className="btn btn-ghost" onClick={onBack}>← Back</button>
-        <span className="flashcard-deck-name">{deck.name}</span>
+        {renamingDeck ? (
+          <input
+            ref={renameInputRef}
+            className="flashcard-deck-rename-input"
+            value={renameValue}
+            onChange={e => setRenameValue(e.target.value)}
+            onBlur={commitRename}
+            onKeyDown={e => { if (e.key === 'Enter') commitRename(); if (e.key === 'Escape') setRenamingDeck(false); }}
+          />
+        ) : (
+          <button className="flashcard-deck-name flashcard-deck-name--editable" onClick={startRename} title="Rename deck">
+            {deck.name}
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginLeft: 6, opacity: 0.5 }}>
+              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+            </svg>
+          </button>
+        )}
         <button className="btn btn-primary flashcard-done-btn" onClick={onBack}>Done</button>
       </div>
+
+      {courses.length > 0 && (
+        <div className="deck-course-assign-row">
+          <span className="deck-course-assign-label">Course</span>
+          <select
+            className="select"
+            value={deck.courseId ?? ''}
+            onChange={e => onAssignCourse?.(deck.id, e.target.value || null)}
+            style={{ borderRadius: 999, fontSize: '0.85rem', padding: '0.25rem 0.75rem', width: 'fit-content' }}
+          >
+            <option value="">No course</option>
+            {courses.map(c => (
+              <option key={c.id} value={c.id}>{c.name}</option>
+            ))}
+          </select>
+        </div>
+      )}
 
       <div className="flashcard-editor-list">
         {deck.cards.map((card, i) => {

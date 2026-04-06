@@ -2,16 +2,21 @@ import { useState } from 'react';
 
 const EVENT_TYPES = ['Test', 'Quiz', 'Assignment', 'Deadline'];
 
-export default function AddEventModal({ courses, initialDate, onAddEvent, onClose }) {
-  const [title,    setTitle]    = useState('');
-  const [type,     setType]     = useState(EVENT_TYPES[0]);
-  const [courseId, setCourseId] = useState('');
+export default function AddEventModal({ courses, initialDate, onAddEvent, onClose, editingEvent, onEditEvent }) {
+  const editing = !!editingEvent;
+  const [title,    setTitle]    = useState(editingEvent?.title    ?? '');
+  const [type,     setType]     = useState(editingEvent?.type     ?? EVENT_TYPES[0]);
+  const [courseId, setCourseId] = useState(editingEvent?.courseId ?? '');
 
   const handleSubmit = (e) => {
     e.preventDefault();
     const trimmed = title.trim();
     if (!trimmed) return;
-    onAddEvent({ title: trimmed, type, date: initialDate, courseId: courseId || null });
+    if (editing) {
+      onEditEvent(editingEvent.id, { title: trimmed, type, courseId: courseId || null });
+    } else {
+      onAddEvent({ title: trimmed, type, date: initialDate, courseId: courseId || null });
+    }
     onClose();
   };
 
@@ -22,8 +27,8 @@ export default function AddEventModal({ courses, initialDate, onAddEvent, onClos
     >
       <div className="modal-card">
         <div className="modal-header">
-          <h2 className="modal-title">Add Event</h2>
-          <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>{initialDate}</span>
+          <h2 className="modal-title">{editing ? 'Edit Event' : 'Add Event'}</h2>
+          <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>{editingEvent?.date ?? initialDate}</span>
           <button className="modal-close" onClick={onClose} aria-label="Close">✕</button>
         </div>
 
@@ -44,12 +49,7 @@ export default function AddEventModal({ courses, initialDate, onAddEvent, onClos
 
           <div className="form-field">
             <label className="form-label" htmlFor="ev-type">Type</label>
-            <select
-              id="ev-type"
-              className="select"
-              value={type}
-              onChange={(e) => setType(e.target.value)}
-            >
+            <select id="ev-type" className="select" value={type} onChange={(e) => setType(e.target.value)}>
               {EVENT_TYPES.map((t) => (
                 <option key={t} value={t}>{t}</option>
               ))}
@@ -58,12 +58,7 @@ export default function AddEventModal({ courses, initialDate, onAddEvent, onClos
 
           <div className="form-field">
             <label className="form-label" htmlFor="ev-course">Course (optional)</label>
-            <select
-              id="ev-course"
-              className="select"
-              value={courseId}
-              onChange={(e) => setCourseId(e.target.value)}
-            >
+            <select id="ev-course" className="select" value={courseId} onChange={(e) => setCourseId(e.target.value)}>
               <option value="">None</option>
               {courses.map((c) => (
                 <option key={c.id} value={c.id}>{c.name}</option>
@@ -73,7 +68,7 @@ export default function AddEventModal({ courses, initialDate, onAddEvent, onClos
 
           <div className="modal-actions">
             <button type="button" className="btn btn-ghost" onClick={onClose}>Cancel</button>
-            <button type="submit" className="btn btn-primary">Add Event</button>
+            <button type="submit" className="btn btn-primary">{editing ? 'Save' : 'Add Event'}</button>
           </div>
         </form>
       </div>

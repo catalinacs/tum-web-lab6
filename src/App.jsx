@@ -13,16 +13,15 @@ import Dashboard from './components/Dashboard';
 import FlashcardDecks from './components/FlashcardDecks';
 import FlashcardEditor from './components/FlashcardEditor';
 import FlashcardStudy from './components/FlashcardStudy';
+import Library from './components/Library';
 
 const PASTEL_COLORS = ['#f4a7b9', '#a8c5a0', '#c3b1e1', '#ffcba4', '#a8d8ea', '#b5ead7', '#ffd97d', '#d4a5c9'];
 
 const NAV_ITEMS = [
-  { id: 'home',       label: 'Home' },
-  { id: 'courses',    label: 'Courses' },
-  { id: 'flashcards', label: 'Flashcards' },
-  { id: 'calendar',   label: 'Calendar' },
-  { id: 'timer',      label: 'Timer' },
-  { id: 'stats',      label: 'Stats' },
+  { id: 'home',    label: 'Home' },
+  { id: 'library', label: 'Your Library' },
+  { id: 'timer',   label: 'Timer' },
+  { id: 'stats',   label: 'Stats' },
 ];
 
 function App() {
@@ -50,6 +49,7 @@ function App() {
   const [modalDate, setModalDate]         = useState(null);
   const [studyingDeck, setStudyingDeck]   = useState(null);
   const [editingDeck, setEditingDeck]     = useState(null);
+  const [menuOpen, setMenuOpen]           = useState(false);
 
   // Timer state lifted here so it keeps running across page switches
   const BREAK_SECONDS = 5 * 60;
@@ -65,19 +65,62 @@ function App() {
   const selectedCourseRef = useRef(selectedCourse);
   selectedCourseRef.current = selectedCourse;
 
+  const chimeAudioRef = useRef(null);
+
+  const buildChimeDataUrl = () => {
+    const sampleRate = 22050;
+    const notes      = [523, 659, 784, 659, 784, 1047, 784, 659, 523, 659, 784, 1047];
+    const noteLen    = 0.5;
+    const duration   = notes.length * noteLen;
+    const numSamples = Math.floor(sampleRate * duration);
+    const buf  = new ArrayBuffer(44 + numSamples * 2);
+    const view = new DataView(buf);
+    const ws   = (off, s) => { for (let i = 0; i < s.length; i++) view.setUint8(off + i, s.charCodeAt(i)); };
+    ws(0, 'RIFF'); view.setUint32(4, 36 + numSamples * 2, true);
+    ws(8, 'WAVE'); ws(12, 'fmt ');
+    view.setUint32(16, 16, true); view.setUint16(20, 1, true); view.setUint16(22, 1, true);
+    view.setUint32(24, sampleRate, true); view.setUint32(28, sampleRate * 2, true);
+    view.setUint16(32, 2, true); view.setUint16(34, 16, true);
+    ws(36, 'data'); view.setUint32(40, numSamples * 2, true);
+    for (let i = 0; i < numSamples; i++) {
+      const t   = i / sampleRate;
+      const ni  = Math.min(Math.floor(t / noteLen), notes.length - 1);
+      const lt  = t - ni * noteLen;
+      const env = Math.min(lt / 0.01, 1) * Math.min((noteLen - lt) / 0.08, 1);
+      const s   = Math.sin(2 * Math.PI * notes[ni] * t) * 32767 * 0.9 * env;
+      view.setInt16(44 + i * 2, Math.round(s), true);
+    }
+    const bytes = new Uint8Array(buf);
+    const CHUNK = 8192;
+    let bin = '';
+    for (let i = 0; i < bytes.length; i += CHUNK)
+      bin += String.fromCharCode.apply(null, bytes.subarray(i, i + CHUNK));
+    return 'data:audio/wav;base64,' + btoa(bin);
+  };
+
+  // Called on Start click (user gesture) — unlocks the Audio element for later use
+  const unlockChime = () => {
+    try {
+      if (!chimeAudioRef.current) {
+        chimeAudioRef.current = new Audio(buildChimeDataUrl());
+        chimeAudioRef.current.volume = 1.0;
+      }
+      const p = chimeAudioRef.current.play();
+      if (p) p.then(() => { chimeAudioRef.current.pause(); chimeAudioRef.current.currentTime = 0; }).catch(() => {});
+    } catch {}
+  };
+
   const playChime = () => {
     try {
-      const ctx = new (window.AudioContext || window.webkitAudioContext)();
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(523, ctx.currentTime);
-      gain.gain.setValueAtTime(0.4, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 1.5);
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      osc.start();
-      osc.stop(ctx.currentTime + 1.5);
+      if (chimeAudioRef.current) {
+        chimeAudioRef.current.currentTime = 0;
+        chimeAudioRef.current.play().catch(() => {});
+      } else {
+        // fallback if unlock was never called
+        const audio = new Audio(buildChimeDataUrl());
+        audio.volume = 1.0;
+        audio.play().catch(() => {});
+      }
     } catch {}
   };
 
@@ -95,17 +138,21 @@ function App() {
     setTimerRunning(false);
   };
 
+  const timerTimeLeftRef = useRef(timerTimeLeft);
+  timerTimeLeftRef.current = timerTimeLeft;
+
   useEffect(() => {
     if (!timerRunning) return;
     const id = setInterval(() => {
-      setTimerTimeLeft(prev => {
-        if (prev <= 1) {
-          clearInterval(id);
-          handleTimerExpire();
-          return 0;
-        }
-        return prev - 1;
-      });
+      const next = timerTimeLeftRef.current - 1;
+      if (next <= 0) {
+        clearInterval(id);
+        setTimerTimeLeft(0);
+        handleTimerExpire();
+      } else {
+        timerTimeLeftRef.current = next;
+        setTimerTimeLeft(next);
+      }
     }, 1000);
     return () => clearInterval(id);
   }, [timerRunning]);
@@ -190,8 +237,20 @@ function App() {
   const renderView = () => {
     switch (activeView) {
       case 'home':
-        return <Dashboard events={events} setEvents={setEvents} courses={courses} />;
-      case 'flashcards':
+        return (
+          <Dashboard
+            events={events}
+            setEvents={setEvents}
+            courses={courses}
+            decks={decks}
+            onOpenDeck={(deck) => { setActiveView('library'); setEditingDeck(deck); }}
+            onStudyDeck={(deck) => { setActiveView('library'); setStudyingDeck(deck); }}
+            onAddEvent={handleAddEvent}
+            modalDate={modalDate}
+            setModalDate={setModalDate}
+          />
+        );
+      case 'library':
         if (studyingDeck) {
           const liveStudyDeck = decks.find(d => d.id === studyingDeck.id) ?? studyingDeck;
           return <FlashcardStudy deck={liveStudyDeck} onBack={() => setStudyingDeck(null)} />;
@@ -201,23 +260,31 @@ function App() {
           return (
             <FlashcardEditor
               deck={liveEditDeck}
+              courses={courses}
               onBack={() => setEditingDeck(null)}
               onAddCard={handleAddCard}
               onDeleteCard={handleDeleteCard}
               onUpdateCard={handleUpdateCard}
               onReorderCards={handleReorderCards}
+              onRenameDeck={(id, name) => setDecks(prev => prev.map(d => d.id === id ? { ...d, name } : d))}
+              onAssignCourse={(id, courseId) => setDecks(prev => prev.map(d => d.id === id ? { ...d, courseId } : d))}
               onStudy={(deck) => { setEditingDeck(null); setStudyingDeck(deck); }}
             />
           );
         }
         return (
-          <FlashcardDecks
+          <Library
             decks={decks}
             courses={courses}
+            sessions={sessions}
             onAddDeck={handleAddDeck}
             onDeleteDeck={handleDeleteDeck}
             onStudy={(deck) => setStudyingDeck(deck)}
             onEdit={(deck) => setEditingDeck(deck)}
+            onAddCourse={handleAddCourse}
+            onDeleteCourse={(id) => setCourses(prev => prev.filter(c => c.id !== id))}
+            onRenameCourse={(id, name) => setCourses(prev => prev.map(c => c.id === id ? { ...c, name } : c))}
+            onSelectCourse={handleSelectCourse}
           />
         );
       case 'timer':
@@ -229,7 +296,7 @@ function App() {
             mode={timerMode}
             timeLeft={timerTimeLeft}
             isRunning={timerRunning}
-            setIsRunning={setTimerRunning}
+            setIsRunning={(v) => { if (v) unlockChime(); setTimerRunning(v); }}
             sessionsCount={timerSessions}
             onReset={() => setTimerTimeLeft(timerMode === 'work' ? timerWorkMinutes * 60 : BREAK_SECONDS)}
             onSkip={() => {
@@ -244,37 +311,6 @@ function App() {
               setTimerTimeLeft(min * 60);
             }}
           />
-        );
-      case 'courses':
-        return (
-          <div className="courses-page">
-            <div className="card">
-              <p className="section-title">Add Course</p>
-              <AddCourseForm onAddCourse={handleAddCourse} />
-            </div>
-            <div className="card">
-              <p className="section-title">My Courses</p>
-              <CourseList {...sharedProps} />
-            </div>
-            <div className="card">
-              <p className="section-title">Session Log</p>
-              <SessionLog {...sharedProps} />
-            </div>
-          </div>
-        );
-      case 'calendar':
-        return (
-          <div className="card">
-            <EventCalendar {...sharedProps} onDayClick={(date) => setModalDate(date)} />
-            {modalDate && (
-              <AddEventModal
-                courses={courses}
-                initialDate={modalDate}
-                onAddEvent={handleAddEvent}
-                onClose={() => setModalDate(null)}
-              />
-            )}
-          </div>
         );
       case 'stats':
         return <StatsPanel {...sharedProps} />;
@@ -304,23 +340,38 @@ function App() {
 
       <div className="mobile-top-bar">
         <img src={studySyncLogo} alt="StudySync" className="mobile-logo" />
-        <ThemeToggle theme={theme} setTheme={setTheme} />
+        <div className="mobile-top-bar-actions">
+          <ThemeToggle theme={theme} setTheme={setTheme} />
+          <button
+            className="hamburger-btn"
+            onClick={() => setMenuOpen(o => !o)}
+            aria-label="Menu"
+          >
+            <span className={`hamburger-icon${menuOpen ? ' open' : ''}`}>
+              <span /><span /><span />
+            </span>
+          </button>
+        </div>
       </div>
 
-      <main className="main-content">{renderView()}</main>
+      {menuOpen && (
+        <div className="mobile-hamburger-overlay" onClick={() => setMenuOpen(false)}>
+          <nav className="mobile-hamburger-menu" onClick={e => e.stopPropagation()}>
+            {NAV_ITEMS.map((item) => (
+              <button
+                key={item.id}
+                className="hamburger-nav-btn"
+                aria-current={activeView === item.id ? 'page' : undefined}
+                onClick={() => { setActiveView(item.id); setMenuOpen(false); }}
+              >
+                {item.label}
+              </button>
+            ))}
+          </nav>
+        </div>
+      )}
 
-      <nav className="mobile-bottom-nav">
-        {NAV_ITEMS.map((item) => (
-          <button
-            key={item.id}
-            className="mobile-nav-btn"
-            onClick={() => setActiveView(item.id)}
-            aria-current={activeView === item.id ? 'page' : undefined}
-          >
-            {item.label}
-          </button>
-        ))}
-      </nav>
+      <main className="main-content">{renderView()}</main>
     </div>
   );
 }

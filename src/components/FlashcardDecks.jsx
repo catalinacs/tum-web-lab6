@@ -41,7 +41,7 @@ export default function FlashcardDecks({ decks, courses, onAddDeck, onDeleteDeck
             className="select"
             value={deckCourse}
             onChange={e => setDeckCourse(e.target.value)}
-            style={{ borderRadius: 999, border: '1.5px solid var(--border)' }}
+            style={{ borderRadius: 999, border: '1.5px solid var(--border)', width: 'fit-content', minWidth: 160 }}
           >
             <option value="">No course</option>
             {courses.map(c => (
@@ -60,7 +60,7 @@ export default function FlashcardDecks({ decks, courses, onAddDeck, onDeleteDeck
           const course = courseMap[courseId];
           return (
             <div key={courseId} className="card">
-              <p className="section-title" style={{ color: course?.color }}>
+              <p className="section-title deck-group-title" style={{ '--group-color': course?.color }}>
                 {course?.name ?? 'No Course'}
               </p>
               <div className="deck-list">
@@ -68,7 +68,7 @@ export default function FlashcardDecks({ decks, courses, onAddDeck, onDeleteDeck
                   <div
                     key={deck.id}
                     className="deck-card"
-                    style={{ borderLeftColor: course?.color ?? '#f4a7b9' }}
+                    style={{ '--deck-border-color': course?.color ?? '#a8d8ea' }}
                   >
                     <div className="deck-info" onClick={() => onEdit(deck)} style={{ cursor: 'pointer' }}>
                       <span className="deck-name deck-name--clickable">{deck.name}</span>

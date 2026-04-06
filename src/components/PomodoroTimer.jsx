@@ -45,7 +45,7 @@ export default function PomodoroTimer({
       </div>
 
       <div className="timer-controls">
-        <button className="btn-timer-primary" onClick={() => setIsRunning(r => !r)}>
+        <button className="btn-timer-primary" onClick={() => setIsRunning(!isRunning)}>
           {isRunning ? 'Pause' : 'Start'}
         </button>
         <button className="btn btn-ghost" onClick={onReset}>Reset</button>
