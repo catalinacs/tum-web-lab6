@@ -1,10 +1,10 @@
 import { useState } from 'react';
 
 const TYPE_COLORS = {
-  Test:       '#f4a7b9',
-  Quiz:       '#a8d8ea',
+  Test:       '#E05C5C',
+  Quiz:       '#4BAFD6',
   Assignment: '#93C572',
-  Deadline:   '#ffd97d',
+  Deadline:   '#F4C430',
 };
 
 function getDaysInMonth(year, month) {

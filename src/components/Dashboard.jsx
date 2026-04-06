@@ -5,10 +5,10 @@ import AddEventModal from './AddEventModal';
 import DayModal from './DayModal';
 
 const TYPE_COLORS = {
-  Test:       '#f4a7b9',
-  Quiz:       '#a8d8ea',
+  Test:       '#E05C5C',
+  Quiz:       '#4BAFD6',
   Assignment: '#93C572',
-  Deadline:   '#ffd97d',
+  Deadline:   '#F4C430',
 };
 
 function classifyEvents(events) {
