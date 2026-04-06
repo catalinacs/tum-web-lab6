@@ -31,7 +31,7 @@ export default function CourseList({ courses, setCourses, setSelectedCourse, onR
         <li
           key={course.id}
           className="course-card"
-          style={{ borderLeftColor: '#a8d8ea' }}
+          style={{ '--course-border': '#a8d8ea' }}
         >
           {renamingId === course.id ? (
             <input

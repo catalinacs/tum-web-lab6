@@ -2,15 +2,9 @@ import { useState, useEffect, useRef } from 'react';
 import studySyncLogo from './assets/studysync-logo.png';
 import { useLocalStorage } from './hooks/useLocalStorage';
 import PomodoroTimer from './components/PomodoroTimer';
-import CourseList from './components/CourseList';
-import AddCourseForm from './components/AddCourseForm';
-import SessionLog from './components/SessionLog';
 import StatsPanel from './components/StatsPanel';
-import EventCalendar from './components/EventCalendar';
-import AddEventModal from './components/AddEventModal';
 import ThemeToggle from './components/ThemeToggle';
 import Dashboard from './components/Dashboard';
-import FlashcardDecks from './components/FlashcardDecks';
 import FlashcardEditor from './components/FlashcardEditor';
 import FlashcardStudy from './components/FlashcardStudy';
 import Library from './components/Library';
@@ -65,61 +59,74 @@ function App() {
   const selectedCourseRef = useRef(selectedCourse);
   selectedCourseRef.current = selectedCourse;
 
-  const chimeAudioRef = useRef(null);
+  const audioCtxRef = useRef(null);
 
-  const buildChimeDataUrl = () => {
-    const sampleRate = 22050;
-    const notes      = [523, 659, 784, 659, 784, 1047, 784, 659, 523, 659, 784, 1047];
-    const noteLen    = 0.5;
-    const duration   = notes.length * noteLen;
-    const numSamples = Math.floor(sampleRate * duration);
-    const buf  = new ArrayBuffer(44 + numSamples * 2);
-    const view = new DataView(buf);
-    const ws   = (off, s) => { for (let i = 0; i < s.length; i++) view.setUint8(off + i, s.charCodeAt(i)); };
-    ws(0, 'RIFF'); view.setUint32(4, 36 + numSamples * 2, true);
-    ws(8, 'WAVE'); ws(12, 'fmt ');
-    view.setUint32(16, 16, true); view.setUint16(20, 1, true); view.setUint16(22, 1, true);
-    view.setUint32(24, sampleRate, true); view.setUint32(28, sampleRate * 2, true);
-    view.setUint16(32, 2, true); view.setUint16(34, 16, true);
-    ws(36, 'data'); view.setUint32(40, numSamples * 2, true);
-    for (let i = 0; i < numSamples; i++) {
-      const t   = i / sampleRate;
-      const ni  = Math.min(Math.floor(t / noteLen), notes.length - 1);
-      const lt  = t - ni * noteLen;
-      const env = Math.min(lt / 0.01, 1) * Math.min((noteLen - lt) / 0.08, 1);
-      const s   = Math.sin(2 * Math.PI * notes[ni] * t) * 32767 * 0.9 * env;
-      view.setInt16(44 + i * 2, Math.round(s), true);
-    }
-    const bytes = new Uint8Array(buf);
-    const CHUNK = 8192;
-    let bin = '';
-    for (let i = 0; i < bytes.length; i += CHUNK)
-      bin += String.fromCharCode.apply(null, bytes.subarray(i, i + CHUNK));
-    return 'data:audio/wav;base64,' + btoa(bin);
-  };
-
-  // Called on Start click (user gesture) — unlocks the Audio element for later use
+  // Called on Start click (user gesture) — resumes AudioContext silently, no sound
   const unlockChime = () => {
     try {
-      if (!chimeAudioRef.current) {
-        chimeAudioRef.current = new Audio(buildChimeDataUrl());
-        chimeAudioRef.current.volume = 1.0;
+      if (!audioCtxRef.current) {
+        audioCtxRef.current = new (window.AudioContext || window.webkitAudioContext)();
       }
-      const p = chimeAudioRef.current.play();
-      if (p) p.then(() => { chimeAudioRef.current.pause(); chimeAudioRef.current.currentTime = 0; }).catch(() => {});
+      audioCtxRef.current.resume();
     } catch {}
   };
 
   const playChime = () => {
     try {
-      if (chimeAudioRef.current) {
-        chimeAudioRef.current.currentTime = 0;
-        chimeAudioRef.current.play().catch(() => {});
+      if (!audioCtxRef.current) {
+        audioCtxRef.current = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      const ctx = audioCtxRef.current;
+      const notes = [523, 659, 784, 659, 784, 1047, 784, 659, 523, 659, 784, 1047];
+      const noteDuration = 0.5;
+      const gap = 0.05;
+
+      const doPlay = () => {
+        // Compressor keeps it loud without clipping
+        const compressor = ctx.createDynamicsCompressor();
+        compressor.threshold.value = -6;
+        compressor.knee.value = 3;
+        compressor.ratio.value = 4;
+        compressor.attack.value = 0.001;
+        compressor.release.value = 0.1;
+        compressor.connect(ctx.destination);
+
+        notes.forEach((freq, i) => {
+          const start = ctx.currentTime + 0.05 + i * (noteDuration + gap);
+          const end   = start + noteDuration;
+
+          // Primary sine tone
+          const osc1  = ctx.createOscillator();
+          const gain1 = ctx.createGain();
+          osc1.type = 'sine';
+          osc1.frequency.setValueAtTime(freq, start);
+          gain1.gain.setValueAtTime(0, start);
+          gain1.gain.linearRampToValueAtTime(0.9, start + 0.015);
+          gain1.gain.exponentialRampToValueAtTime(0.001, end);
+          osc1.connect(gain1);
+          gain1.connect(compressor);
+          osc1.start(start);
+          osc1.stop(end);
+
+          // Subtle overtone (one octave up) for brightness
+          const osc2  = ctx.createOscillator();
+          const gain2 = ctx.createGain();
+          osc2.type = 'sine';
+          osc2.frequency.setValueAtTime(freq * 2, start);
+          gain2.gain.setValueAtTime(0, start);
+          gain2.gain.linearRampToValueAtTime(0.25, start + 0.015);
+          gain2.gain.exponentialRampToValueAtTime(0.001, end);
+          osc2.connect(gain2);
+          gain2.connect(compressor);
+          osc2.start(start);
+          osc2.stop(end);
+        });
+      };
+
+      if (ctx.state === 'suspended') {
+        ctx.resume().then(doPlay);
       } else {
-        // fallback if unlock was never called
-        const audio = new Audio(buildChimeDataUrl());
-        audio.volume = 1.0;
-        audio.play().catch(() => {});
+        doPlay();
       }
     } catch {}
   };
