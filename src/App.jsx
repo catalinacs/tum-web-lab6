@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import studySyncLogo from './assets/studysync-logo.png';
 import { useLocalStorage } from './hooks/useLocalStorage';
 import PomodoroTimer from './components/PomodoroTimer';
@@ -50,6 +50,48 @@ function App() {
   const [modalDate, setModalDate]         = useState(null);
   const [studyingDeck, setStudyingDeck]   = useState(null);
   const [editingDeck, setEditingDeck]     = useState(null);
+
+  // Timer state lifted here so it keeps running across page switches
+  const BREAK_SECONDS = 5 * 60;
+  const [timerWorkMinutes, setTimerWorkMinutes] = useState(25);
+  const [timerMode, setTimerMode]               = useState('work');
+  const [timerTimeLeft, setTimerTimeLeft]       = useState(25 * 60);
+  const [timerRunning, setTimerRunning]         = useState(false);
+  const [timerSessions, setTimerSessions]       = useState(0);
+  const timerModeRef = useRef(timerMode);
+  timerModeRef.current = timerMode;
+  const timerWorkMinutesRef = useRef(timerWorkMinutes);
+  timerWorkMinutesRef.current = timerWorkMinutes;
+  const selectedCourseRef = useRef(selectedCourse);
+  selectedCourseRef.current = selectedCourse;
+
+  const handleTimerExpire = () => {
+    if (timerModeRef.current === 'work') {
+      handleSessionComplete(selectedCourseRef.current, timerWorkMinutesRef.current);
+      setTimerSessions(n => n + 1);
+      setTimerMode('break');
+      setTimerTimeLeft(BREAK_SECONDS);
+    } else {
+      setTimerMode('work');
+      setTimerTimeLeft(timerWorkMinutesRef.current * 60);
+    }
+    setTimerRunning(false);
+  };
+
+  useEffect(() => {
+    if (!timerRunning) return;
+    const id = setInterval(() => {
+      setTimerTimeLeft(prev => {
+        if (prev <= 1) {
+          clearInterval(id);
+          handleTimerExpire();
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(id);
+  }, [timerRunning]);
 
   const handleAddCourse = (name) => {
     const color = PASTEL_COLORS[courses.length % PASTEL_COLORS.length];
@@ -162,7 +204,30 @@ function App() {
           />
         );
       case 'timer':
-        return <PomodoroTimer {...sharedProps} onSessionComplete={handleSessionComplete} />;
+        return (
+          <PomodoroTimer
+            selectedCourse={selectedCourse}
+            workMinutes={timerWorkMinutes}
+            setWorkMinutes={setTimerWorkMinutes}
+            mode={timerMode}
+            timeLeft={timerTimeLeft}
+            isRunning={timerRunning}
+            setIsRunning={setTimerRunning}
+            sessionsCount={timerSessions}
+            onReset={() => setTimerTimeLeft(timerMode === 'work' ? timerWorkMinutes * 60 : BREAK_SECONDS)}
+            onSkip={() => {
+              setTimerRunning(false);
+              if (timerMode === 'work') { setTimerMode('break'); setTimerTimeLeft(BREAK_SECONDS); }
+              else { setTimerMode('work'); setTimerTimeLeft(timerWorkMinutes * 60); }
+            }}
+            onDurationChange={(min) => {
+              setTimerWorkMinutes(min);
+              setTimerRunning(false);
+              setTimerMode('work');
+              setTimerTimeLeft(min * 60);
+            }}
+          />
+        );
       case 'courses':
         return (
           <div className="courses-page">
