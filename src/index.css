@@ -1487,7 +1487,6 @@ input, select, textarea { font-family: 'Righteous', sans-serif; }
 [data-theme='dark'] .course-bar-name {
   color: #f4a7b9 !important;
 }
-}
 
 /* ── Calendar ── */
 .calendar-page,
