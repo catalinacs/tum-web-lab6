@@ -233,11 +233,10 @@ function App() {
             setIsRunning={setTimerRunning}
             sessionsCount={timerSessions}
             chimeCount={chimeCount}
-            onReset={() => setTimerTimeLeft(timerMode === 'work' ? timerWorkMinutes * 60 : BREAK_SECONDS)}
-            onSkip={() => {
+            onReset={() => {
               setTimerRunning(false);
-              if (timerMode === 'work') { setTimerMode('break'); setTimerTimeLeft(BREAK_SECONDS); }
-              else { setTimerMode('work'); setTimerTimeLeft(timerWorkMinutes * 60); }
+              setTimerMode('work');
+              setTimerTimeLeft(timerWorkMinutes * 60);
             }}
             onDurationChange={(min) => {
               setTimerWorkMinutes(min);

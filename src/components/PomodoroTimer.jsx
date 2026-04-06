@@ -8,18 +8,15 @@ function formatTime(seconds) {
 
 export default function PomodoroTimer({
   selectedCourse,
-  workMinutes, breakSeconds, setWorkMinutes,
+  workMinutes, breakSeconds,
   mode, timeLeft, isRunning, setIsRunning,
   sessionsCount, chimeCount,
-  onReset, onSkip, onDurationChange,
+  onReset, onDurationChange,
 }) {
   const fullTime = mode === 'work' ? workMinutes * 60 : breakSeconds;
   const audioCtxRef = useRef(null);
 
-  const playChime = () => {
-    const ctx = audioCtxRef.current;
-    if (!ctx) return;
-    if (ctx.state === 'suspended') ctx.resume();
+  const scheduleNotes = (ctx) => {
     const notes = [523, 659, 784, 1047, 784, 1047, 1319];
     const noteLen = 0.45;
     const now = ctx.currentTime;
@@ -38,6 +35,16 @@ export default function PomodoroTimer({
       osc.start(t0);
       osc.stop(t1 + 0.05);
     });
+  };
+
+  const playChime = () => {
+    const ctx = audioCtxRef.current;
+    if (!ctx) return;
+    if (ctx.state === 'suspended') {
+      ctx.resume().then(() => scheduleNotes(ctx));
+    } else {
+      scheduleNotes(ctx);
+    }
   };
 
   // chimeCount is incremented in App.jsx ONLY when a work session finishes.
@@ -92,7 +99,6 @@ export default function PomodoroTimer({
             {isRunning ? 'Pause' : timeLeft === fullTime ? 'Start' : 'Continue'}
           </button>
           <button className="btn btn-ghost" onClick={onReset}>Reset</button>
-          <button className="btn btn-ghost" onClick={onSkip}>Skip</button>
         </div>
 
         <p className="timer-sessions">Sessions completed: {sessionsCount}</p>
