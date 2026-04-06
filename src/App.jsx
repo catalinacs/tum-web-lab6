@@ -59,66 +59,7 @@ function App() {
   const selectedCourseRef = useRef(selectedCourse);
   selectedCourseRef.current = selectedCourse;
 
-  const chimeAudioRef = useRef(null);
-
-  const buildWavDataUrl = (genSample, sampleRate, duration) => {
-    const n = Math.floor(sampleRate * duration);
-    const buf = new ArrayBuffer(44 + n * 2);
-    const v = new DataView(buf);
-    const ws = (off, s) => { for (let i = 0; i < s.length; i++) v.setUint8(off + i, s.charCodeAt(i)); };
-    ws(0, 'RIFF'); v.setUint32(4, 36 + n * 2, true);
-    ws(8, 'WAVE'); ws(12, 'fmt ');
-    v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true);
-    v.setUint32(24, sampleRate, true); v.setUint32(28, sampleRate * 2, true);
-    v.setUint16(32, 2, true); v.setUint16(34, 16, true);
-    ws(36, 'data'); v.setUint32(40, n * 2, true);
-    for (let i = 0; i < n; i++) v.setInt16(44 + i * 2, Math.round(genSample(i, n, sampleRate)), true);
-    const bytes = new Uint8Array(buf);
-    const CHUNK = 8192; let bin = '';
-    for (let i = 0; i < bytes.length; i += CHUNK)
-      bin += String.fromCharCode.apply(null, bytes.subarray(i, i + CHUNK));
-    return 'data:audio/wav;base64,' + btoa(bin);
-  };
-
-  // Build the chime element once and prime it on the first user gesture (iOS unlock)
-  const unlockChime = () => {
-    try {
-      if (!chimeAudioRef.current) {
-        const notes = [523, 659, 784, 659, 784, 1047, 784, 659, 523, 659, 784, 1047];
-        const noteLen = 0.5;
-        const url = buildWavDataUrl((i, _n, sr) => {
-          const t = i / sr;
-          const ni = Math.min(Math.floor(t / noteLen), notes.length - 1);
-          const lt = t - ni * noteLen;
-          const env = Math.min(lt / 0.01, 1) * Math.min((noteLen - lt) / 0.08, 1);
-          return Math.sin(2 * Math.PI * notes[ni] * t) * 32767 * 0.9 * env;
-        }, 22050, notes.length * noteLen);
-        chimeAudioRef.current = new Audio(url);
-        chimeAudioRef.current.volume = 1.0;
-      }
-      // Prime at volume 0 so nothing is heard, then restore volume for real playback later.
-      chimeAudioRef.current.volume = 0;
-      chimeAudioRef.current.currentTime = 0;
-      const p = chimeAudioRef.current.play();
-      if (p) p.then(() => {
-        chimeAudioRef.current.pause();
-        chimeAudioRef.current.currentTime = 0;
-        chimeAudioRef.current.volume = 1.0;
-      }).catch(() => {});
-    } catch {}
-  };
-
-  const playChime = () => {
-    try {
-      if (chimeAudioRef.current) {
-        chimeAudioRef.current.currentTime = 0;
-        chimeAudioRef.current.play().catch(() => {});
-      }
-    } catch {}
-  };
-
   const handleTimerExpire = () => {
-    playChime();
     if (timerModeRef.current === 'work') {
       handleSessionComplete(selectedCourseRef.current, timerWorkMinutesRef.current);
       setTimerSessions(n => n + 1);
@@ -134,21 +75,24 @@ function App() {
   const timerTimeLeftRef = useRef(timerTimeLeft);
   timerTimeLeftRef.current = timerTimeLeft;
 
+  // Count down — just decrement, stop at 0
   useEffect(() => {
     if (!timerRunning) return;
     const id = setInterval(() => {
       const next = timerTimeLeftRef.current - 1;
-      if (next <= 0) {
-        clearInterval(id);
-        setTimerTimeLeft(0);
-        handleTimerExpire();
-      } else {
-        timerTimeLeftRef.current = next;
-        setTimerTimeLeft(next);
-      }
+      timerTimeLeftRef.current = Math.max(0, next);
+      setTimerTimeLeft(Math.max(0, next));
+      if (next <= 0) clearInterval(id);
     }, 1000);
     return () => clearInterval(id);
   }, [timerRunning]);
+
+  // Handle expiry — fires after the render where timerTimeLeft becomes 0
+  useEffect(() => {
+    if (timerTimeLeft === 0 && timerRunning) {
+      handleTimerExpire();
+    }
+  }, [timerTimeLeft]);
 
   const handleAddCourse = (name) => {
     const color = PASTEL_COLORS[courses.length % PASTEL_COLORS.length];
@@ -290,7 +234,7 @@ function App() {
             mode={timerMode}
             timeLeft={timerTimeLeft}
             isRunning={timerRunning}
-            setIsRunning={(v) => { if (v) unlockChime(); setTimerRunning(v); }}
+            setIsRunning={setTimerRunning}
             sessionsCount={timerSessions}
             onReset={() => setTimerTimeLeft(timerMode === 'work' ? timerWorkMinutes * 60 : BREAK_SECONDS)}
             onSkip={() => {

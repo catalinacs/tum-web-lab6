@@ -1,3 +1,5 @@
+import { useRef, useEffect } from 'react';
+
 function formatTime(seconds) {
   const m = String(Math.floor(seconds / 60)).padStart(2, '0');
   const s = String(seconds % 60).padStart(2, '0');
@@ -12,6 +14,40 @@ export default function PomodoroTimer({
   onReset, onSkip, onDurationChange,
 }) {
   const fullTime = mode === 'work' ? workMinutes * 60 : breakSeconds;
+  const audioCtxRef = useRef(null);
+  const prevModeRef = useRef(mode);
+
+  const playChime = () => {
+    const ctx = audioCtxRef.current;
+    if (!ctx) return;
+    if (ctx.state === 'suspended') ctx.resume();
+    const notes = [523, 659, 784, 1047, 784, 1047, 1319];
+    const noteLen = 0.45;
+    const now = ctx.currentTime;
+    notes.forEach((freq, i) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.type = 'sine';
+      osc.frequency.value = freq;
+      const t0 = now + i * noteLen;
+      const t1 = t0 + noteLen * 0.85;
+      gain.gain.setValueAtTime(0, t0);
+      gain.gain.linearRampToValueAtTime(0.7, t0 + 0.02);
+      gain.gain.linearRampToValueAtTime(0, t1);
+      osc.start(t0);
+      osc.stop(t1 + 0.05);
+    });
+  };
+
+  // Only chime when work timer hits 0
+  useEffect(() => {
+    if (timeLeft === 0 && prevModeRef.current === 'work') {
+      playChime();
+    }
+    prevModeRef.current = mode;
+  }, [timeLeft, mode]);
   return (
     <div className="timer-page">
       <div className="timer-duration-row">
@@ -49,7 +85,13 @@ export default function PomodoroTimer({
         </div>
 
         <div className="timer-controls">
-          <button className="btn-timer-primary" onClick={() => setIsRunning(!isRunning)}>
+          <button className="btn-timer-primary" onClick={() => {
+            if (!isRunning) {
+              if (!audioCtxRef.current) audioCtxRef.current = new AudioContext();
+              else if (audioCtxRef.current.state === 'suspended') audioCtxRef.current.resume();
+            }
+            setIsRunning(!isRunning);
+          }}>
             {isRunning ? 'Pause' : timeLeft === fullTime ? 'Start' : 'Continue'}
           </button>
           <button className="btn btn-ghost" onClick={onReset}>Reset</button>
