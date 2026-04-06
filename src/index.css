@@ -410,14 +410,22 @@ input, select, textarea { font-family: 'Righteous', sans-serif; }
 
 .flashcard-new-deck-form {
   display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.flashcard-deck-name-row {
+  display: flex;
   gap: 0.75rem;
   align-items: center;
-  flex-wrap: wrap;
+}
+
+.flashcard-deck-name-row .input {
+  flex: 1;
 }
 
 .flashcard-new-deck-form .select {
-  flex: 1;
-  min-width: 140px;
+  width: 100%;
   border-radius: 999px;
 }
 
@@ -1147,6 +1155,18 @@ input, select, textarea { font-family: 'Righteous', sans-serif; }
 
 /* ── Stats ── */
 .stats-page { display: flex; flex-direction: column; gap: 1.5rem; }
+
+.stats-illustration {
+  display: flex;
+  justify-content: center;
+  padding: 10rem 0 1rem;
+}
+
+.stats-study-img {
+  width: 260px;
+  max-width: 100%;
+  opacity: 0.9;
+}
 
 .stats-grid {
   display: grid;

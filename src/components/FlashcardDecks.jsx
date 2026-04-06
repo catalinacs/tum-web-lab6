@@ -26,26 +26,28 @@ export default function FlashcardDecks({ decks, courses, onAddDeck, onDeleteDeck
       <div className="card">
         <p className="section-title">New Deck</p>
         <form className="flashcard-new-deck-form" onSubmit={handleAddDeck}>
-          <input
-            className="input"
-            type="text"
-            placeholder="Deck name"
-            value={deckName}
-            onChange={e => setDeckName(e.target.value)}
-            required
-          />
+          <div className="flashcard-deck-name-row">
+            <input
+              className="input"
+              type="text"
+              placeholder="Deck name"
+              value={deckName}
+              onChange={e => setDeckName(e.target.value)}
+              required
+            />
+            <button type="submit" className="btn btn-primary">Create</button>
+          </div>
           <select
             className="select"
             value={deckCourse}
             onChange={e => setDeckCourse(e.target.value)}
-            style={{ borderRadius: 999, flex: 1, minWidth: 140, border: '1.5px solid var(--border)' }}
+            style={{ borderRadius: 999, border: '1.5px solid var(--border)' }}
           >
             <option value="">No course</option>
             {courses.map(c => (
               <option key={c.id} value={c.id}>{c.name}</option>
             ))}
           </select>
-          <button type="submit" className="btn btn-primary">Create</button>
         </form>
       </div>
 

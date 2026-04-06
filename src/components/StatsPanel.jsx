@@ -1,3 +1,5 @@
+import studyImg from '../assets/study.png';
+
 function calcStreak(sessions) {
   if (!sessions.length) return 0;
   const days = new Set(sessions.map((s) => new Date(s.completedAt).toDateString()));
@@ -66,6 +68,9 @@ export default function StatsPanel({ sessions, courses }) {
           </div>
         </div>
       )}
+      <div className="stats-illustration">
+        <img src={studyImg} alt="Studying" className="stats-study-img" />
+      </div>
     </div>
   );
 }
