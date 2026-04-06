@@ -35,7 +35,7 @@ export default function PomodoroTimer({
         <div className="timer-circle">
           <span className="timer-mode-label">{mode === 'work' ? 'Work' : 'Break'}</span>
           <span className="timer-time">
-            {formatTime(timeLeft)[0]}<span className="timer-colon">:</span>{formatTime(timeLeft)[1]}
+            <span>{formatTime(timeLeft)[0]}</span><span className="timer-colon">:</span><span>{formatTime(timeLeft)[1]}</span>
           </span>
           {selectedCourse ? (
             <span className="timer-course">

@@ -1175,14 +1175,15 @@ input, select, textarea { font-family: 'Righteous', sans-serif; }
 }
 
 .timer-colon {
-  display: inline-block;
-  position: relative;
-  bottom: 0.15em;
   margin: 0 0.05em;
+  transform: translateY(-0.1em);
 }
 
 .timer-time {
-  font-size: 6.5rem;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  font-size: clamp(2.8rem, 16vw, 6.5rem);
   font-weight: 800;
   color: var(--text);
   line-height: 1;
@@ -1978,10 +1979,41 @@ input, select, textarea { font-family: 'Righteous', sans-serif; }
   }
   .deck-info { width: 100%; }
   .deck-actions { flex-wrap: nowrap; gap: 0.4rem; width: 100%; }
+  .deck-actions .btn { padding: 0.2rem 0.6rem; font-size: 0.72rem; }
+  .flashcard-deck-name-row .btn { padding: 0.3rem 1rem; font-size: 0.85rem; }
+  .flashcard-deck-name-row .input { font-size: 0.85rem; }
 
   /* Timer */
-  .timer-circle { width: 200px; height: 200px; }
+  .timer-circle { width: auto; height: auto; }
+  .timer-mode-label { font-size: 0.9rem; }
+  .timer-body { gap: 1.2rem; }
+  .timer-page { gap: 0; }
 
-  /* Stats grid */
-  .stats-grid { grid-template-columns: 1fr 1fr; }
+  /* Stats grid — horizontal scroll on mobile */
+  .stats-grid {
+    display: flex;
+    flex-direction: row;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    gap: 0.75rem;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    padding-bottom: 0.25rem;
+  }
+  .stats-grid::-webkit-scrollbar { display: none; }
+  .stats-grid .card {
+    min-width: 140px;
+    flex-shrink: 0;
+    scroll-snap-align: start;
+    padding: 1rem 0.75rem;
+  }
+  .stats-number { font-size: 2rem; }
+  .stats-label { font-size: 0.65rem; }
+
+  /* Add Course form */
+  .add-course-form .btn { padding: 0 1rem; font-size: 0.85rem; }
+  .add-course-form .input { font-size: 0.85rem; }
+
+  /* Course list */
+  .course-actions .btn-primary { padding: 0.25rem 0.75rem; font-size: 0.78rem; }
 }
