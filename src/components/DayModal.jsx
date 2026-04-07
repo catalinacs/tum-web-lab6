@@ -1,12 +1,11 @@
 const TYPE_COLORS = {
-  Test:       '#f4a7b9',
-  Quiz:       '#a8d8ea',
+  Test:       '#E05C5C',
+  Quiz:       '#4BAFD6',
   Assignment: '#93C572',
-  Deadline:   '#ffd97d',
+  Deadline:   '#F4C430',
 };
 
-export default function DayModal({ date, events, courses, onClose, onAdd, onEdit, onDelete }) {
-  const courseMap = Object.fromEntries(courses.map(c => [c.id, c]));
+export default function DayModal({ date, events, onClose, onAdd, onEdit, onDelete }) {
   const dayEvents = events.filter(ev => ev.date === date);
 
   return (
@@ -16,7 +15,9 @@ export default function DayModal({ date, events, courses, onClose, onAdd, onEdit
     >
       <div className="modal-card">
         <div className="modal-header">
-          <h2 className="modal-title">{date}</h2>
+          <h2 className="modal-title">
+            {new Date(date + 'T00:00:00').toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' })}
+          </h2>
           <button className="modal-close" onClick={onClose} aria-label="Close">✕</button>
         </div>
 
@@ -25,7 +26,6 @@ export default function DayModal({ date, events, courses, onClose, onAdd, onEdit
             <p className="empty-state" style={{ margin: '0.5rem 0' }}>No events on this day.</p>
           )}
           {dayEvents.map(ev => {
-            const course = courseMap[ev.courseId];
             return (
               <div key={ev.id} className="day-modal-event-row">
                 <span
@@ -35,11 +35,6 @@ export default function DayModal({ date, events, courses, onClose, onAdd, onEdit
                   {ev.type}
                 </span>
                 <span className="day-modal-event-title">{ev.title}</span>
-                {course && (
-                  <span className="day-modal-event-course" style={{ color: course.color }}>
-                    {course.name}
-                  </span>
-                )}
                 <div className="day-modal-event-actions">
                   <button className="day-modal-icon-btn" onClick={() => onEdit(ev)} title="Edit">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

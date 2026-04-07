@@ -1672,6 +1672,8 @@ input, select, textarea { font-family: 'Righteous', sans-serif; }
 }
 
 .upcoming-date { color: var(--text-muted); font-size: 0.8rem; white-space: nowrap; }
+.upcoming-course { font-size: 0.78rem; color: #6b4c35; white-space: nowrap; }
+[data-theme='dark'] .upcoming-course { color: #ffffff; }
 .upcoming-title { font-weight: 700; flex: 1; color: var(--text); text-align: left; }
 
 [data-theme='dark'] .upcoming-title { color: #ffffff !important; }

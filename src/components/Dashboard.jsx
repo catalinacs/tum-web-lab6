@@ -105,6 +105,7 @@ export default function Dashboard({ events, setEvents, courses, decks = [], onOp
           courses={courses}
           onDayClick={handleDayClick}
         />
+
         {dayModalDate && (
           <DayModal
             date={dayModalDate}

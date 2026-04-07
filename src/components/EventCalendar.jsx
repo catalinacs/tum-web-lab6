@@ -19,7 +19,8 @@ function toDateKey(year, month, day) {
   return `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
 }
 
-export default function EventCalendar({ events, onDayClick }) {
+export default function EventCalendar({ events, courses = [], onDayClick }) {
+  const courseMap = Object.fromEntries(courses.map(c => [c.id, c]));
   const today = new Date();
   const [viewYear, setViewYear]   = useState(today.getFullYear());
   const [viewMonth, setViewMonth] = useState(today.getMonth());
@@ -98,18 +99,22 @@ export default function EventCalendar({ events, onDayClick }) {
           <p className="empty-state">No upcoming events.</p>
         ) : (
           <ul className="upcoming-list">
-            {upcoming.map((ev) => (
-              <li key={ev.id} className="upcoming-item">
-                <span
-                  className="event-type-badge"
-                  style={{ backgroundColor: TYPE_COLORS[ev.type] ?? '#eee' }}
-                >
-                  {ev.type}
-                </span>
-                <span className="upcoming-title">{ev.title}</span>
-                <span className="upcoming-date">{new Date(ev.date + 'T00:00:00').toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' })}</span>
-              </li>
-            ))}
+            {upcoming.map((ev) => {
+              const course = courseMap[ev.courseId];
+              return (
+                <li key={ev.id} className="upcoming-item">
+                  <span
+                    className="event-type-badge"
+                    style={{ backgroundColor: TYPE_COLORS[ev.type] ?? '#eee' }}
+                  >
+                    {ev.type}
+                  </span>
+                  <span className="upcoming-title">{ev.title}</span>
+                  {course && <span className="upcoming-course">{course.name}</span>}
+                  <span className="upcoming-date">{new Date(ev.date + 'T00:00:00').toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' })}</span>
+                </li>
+              );
+            })}
           </ul>
         )}
       </div>
