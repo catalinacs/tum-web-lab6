@@ -1,12 +1,46 @@
 import { useState, useRef } from 'react';
+import { fetchCourses } from '../api/client';
 
 export default function CourseList({ courses, setCourses, setSelectedCourse, onRenameCourse }) {
   const [renamingId, setRenamingId] = useState(null);
   const [renameValue, setRenameValue] = useState('');
+  const [syncing, setSyncing] = useState(false);
+  const [syncMsg, setSyncMsg] = useState(null);
+
+  const handleSync = async () => {
+    setSyncing(true);
+    setSyncMsg(null);
+    try {
+      const result = await fetchCourses(100, 0);
+      const existingNames = new Set(courses.map(c => c.name.toLowerCase()));
+      const newCourses = result.data.filter(c => !existingNames.has(c.name.toLowerCase()));
+      if (newCourses.length > 0) {
+        setCourses(prev => [...prev, ...newCourses]);
+      }
+      setSyncMsg({ ok: true, text: `Synced ${newCourses.length} new course${newCourses.length !== 1 ? 's' : ''} from API` });
+    } catch (err) {
+      setSyncMsg({ ok: false, text: err.message });
+    } finally {
+      setSyncing(false);
+      setTimeout(() => setSyncMsg(null), 4000);
+    }
+  };
   const inputRef = useRef(null);
 
+  const syncLabel = syncing ? 'Syncing…' : 'Sync with API';
+
   if (!courses.length) {
-    return <p className="empty-state">No courses yet. Add one above to get started.</p>;
+    return (
+      <>
+        <p className="empty-state">No courses yet. Add one above to get started.</p>
+        <div className="sync-bar">
+          <button className="btn btn-primary sync-btn" onClick={handleSync} disabled={syncing}>
+            {syncLabel}
+          </button>
+          {syncMsg && <span className={`sync-toast ${syncMsg.ok ? 'sync-toast--ok' : 'sync-toast--err'}`}>{syncMsg.text}</span>}
+        </div>
+      </>
+    );
   }
 
   const handleDelete = (id) => {
@@ -26,6 +60,13 @@ export default function CourseList({ courses, setCourses, setSelectedCourse, onR
   };
 
   return (
+    <>
+    <div className="sync-bar">
+      <button className="btn btn-primary sync-btn" onClick={handleSync} disabled={syncing}>
+        {syncLabel}
+      </button>
+      {syncMsg && <span className={`sync-toast ${syncMsg.ok ? 'sync-toast--ok' : 'sync-toast--err'}`}>{syncMsg.text}</span>}
+    </div>
     <ul className="course-list">
       {courses.map((course) => (
         <li
@@ -60,5 +101,6 @@ export default function CourseList({ courses, setCourses, setSelectedCourse, onR
         </li>
       ))}
     </ul>
+    </>
   );
 }
