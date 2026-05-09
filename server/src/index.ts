@@ -1,6 +1,8 @@
 import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
+import swaggerUi from 'swagger-ui-express';
+import { swaggerSpec } from './swagger';
 import tokenRouter    from './routes/token.router';
 import decksRouter    from './routes/decks.router';
 import coursesRouter  from './routes/courses.router';
@@ -17,6 +19,7 @@ app.get('/health', (_req, res) => {
   res.json({ status: 'ok' });
 });
 
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use('/token',         tokenRouter);
 app.use('/api/v1/decks',    decksRouter);
 app.use('/api/v1/courses',  coursesRouter);
@@ -25,4 +28,5 @@ app.use('/api/v1/events',   eventsRouter);
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
+  console.log(`Swagger docs at http://localhost:${PORT}/api-docs`);
 });

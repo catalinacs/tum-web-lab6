@@ -9,6 +9,43 @@ const ROLE_PERMISSIONS: Record<string, string[]> = {
   VISITOR: ['READ'],
 };
 
+/**
+ * @swagger
+ * /token:
+ *   post:
+ *     summary: Issue a JWT for a given role
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [role]
+ *             properties:
+ *               role:
+ *                 type: string
+ *                 enum: [ADMIN, WRITER, VISITOR]
+ *     responses:
+ *       200:
+ *         description: JWT token issued
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 token:
+ *                   type: string
+ *       400:
+ *         description: Invalid role
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ */
 router.post('/', (req: Request, res: Response): void => {
   const { role } = req.body;
 
