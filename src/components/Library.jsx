@@ -6,7 +6,7 @@ import CourseList from './CourseList';
 const TABS = ['Flashcard sets', 'Courses'];
 
 export default function Library({
-  decks, courses, sessions,
+  decks, courses, setCourses, sessions,
   onAddDeck, onDeleteDeck, onStudy, onEdit,
   onAddCourse, onDeleteCourse, onSelectCourse, onRenameCourse,
 }) {
@@ -63,7 +63,7 @@ export default function Library({
             <p className="section-title">My Courses</p>
             <CourseList
               courses={courses}
-              setCourses={() => {}}
+              setCourses={setCourses}
               sessions={sessions}
               selectedCourse={null}
               setSelectedCourse={onSelectCourse}

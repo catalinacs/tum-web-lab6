@@ -209,6 +209,7 @@ function App() {
           <Library
             decks={decks}
             courses={courses}
+            setCourses={setCourses}
             sessions={sessions}
             onAddDeck={handleAddDeck}
             onDeleteDeck={handleDeleteDeck}

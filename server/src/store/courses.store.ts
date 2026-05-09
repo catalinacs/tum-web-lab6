@@ -3,9 +3,9 @@ import { v4 as uuid } from 'uuid';
 export interface Course { id: string; name: string; color: string; }
 
 const courses: Course[] = [
-  { id: uuid(), name: 'Physics',     color: '#f4a7b9' },
-  { id: uuid(), name: 'Mathematics', color: '#a8d8ea' },
-  { id: uuid(), name: 'History',     color: '#a8c5a0' },
+  { id: uuid(), name: 'Physics',           color: '#f4a7b9' },
+  { id: uuid(), name: 'Embedded Systems',  color: '#f4c430' },
+  { id: uuid(), name: 'Programming Web',   color: '#c3a8ea' },
 ];
 
 export const getAll  = (): Course[] => courses;
